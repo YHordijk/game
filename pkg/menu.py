@@ -9,153 +9,106 @@ import copy, math
 class TransitionAnimation:
 	def __init__(self, start_time=0):
 		self.start_time = start_time
+		self.original_offset = copy.copy(menu.menu_offset)
 
 
 class shift_menus(TransitionAnimation):
-	def __init__(self, menu1, menu2, direction='right', duration=0.4, *args, **kwargs):
+	def __init__(self, menu, direction='right', duration=0.4, *args, **kwargs):
 		super().__init__(*args, **kwargs)
-		self.menu1 = menu1
-		self.menu2 = menu2
+		self.menu = menu
 		self.direction = direction
 		self.duration = duration
 
-		if direction == 'right':
-			for widget in menu2.widgets:
-				widget.pos = (widget.original_pos[0] - menu2.SIZE[0], widget.original_pos[1])
 
 	def update(self):
-		s = self.menu1.SIZE
+		s = self.menu.SIZE
 
-		progress = min((time - self.start_time)/self.duration, 1)
-
-		self.menu1.hidden = False
-		self.menu2.hidden = False
-		print(progress)
-
-		for widget in self.menu1.widgets:
-			if self.direction == 'right':
-				target_pos = np.array([widget.original_pos[0] + s[0], widget.original_pos[1]])
-				widget.pos[0] = (target_pos[0] - widget.original_pos[0]) * progress
-
-		for widget in self.menu2.widgets:
-			if self.direction == 'right':
-				target_pos = np.array([widget.original_pos[0], widget.original_pos[1]])
-				widget.pos = (target_pos - widget.pos) * 0.2
+		progress = (time - self.start_time)/self.duration
+		step_size = dT/self.duration
+		if progress > 1:
+			step_size -= progress - 1
+			progress = 1
 
 
-		if time >= self.duration + self.start_time:
+		if self.direction == 'right':
+			d = np.array([s[0], 0])
+			menu.menu_offset = self.original_offset + d * progress
+		if self.direction == 'left':
+			d = np.array([-s[0], 0])
+			menu.menu_offset = self.original_offset + d * progress
+
+
+		if progress >= 1:
 			global active_transition_animation
 			active_transition_animation = None
-			self.menu1.hidden = True
+
+
+class log_shift_menus(TransitionAnimation):
+	def __init__(self, menu, direction='right', duration=0.5, speed=20, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.menu = menu
+		self.direction = direction
+		self.duration = duration
+		self.speed = speed
+
+
+	def update(self):
+		s = self.menu.SIZE
+
+		progress = (time - self.start_time)/self.duration
+		step_size = dT/self.duration
+		if progress > 1:
+			step_size -= progress - 1
+			progress = 1
+
+
+		if self.direction == 'right':
+			d = np.array([s[0], 0]) + self.original_offset
+			menu.menu_offset = menu.menu_offset + (d - menu.menu_offset)*self.speed*dT
+		if self.direction == 'left':
+			d = np.array([-s[0], 0]) + self.original_offset
+			menu.menu_offset = menu.menu_offset + (d - menu.menu_offset)*self.speed*dT
+
+
+		if progress >= 1:
+			global active_transition_animation
+			active_transition_animation = None
+			menu_offset = self.original_offset + d
 
 
 
-
-def _start_button_action(source):
-	print('Pressed start button!')
-
+def _colour_button_action(source):
 	if source.times_pressed % 4 == 0:
-		source.color = (255,255,255)
+		source.colour = (255,255,255)
 	elif source.times_pressed % 4 == 1:
-		source.color = (0,255,0)
+		source.colour = (0,255,0)
 	elif source.times_pressed % 4 == 2:
-		source.color = (0,0,255)
+		source.colour = (0,0,255)
 	elif source.times_pressed % 4 == 3:
-		source.color = (255,0,0)
+		source.colour = (255,0,0)
 
 	source.update_draw_surface()
 
 
 def _start_button_action(source):
-	global active_menu, active_transition_animation
-	new_menu = menus['testmenu']
-	active_transition_animation = shift_menus(start_time=time, menu1=active_menu, menu2=new_menu, direction='right')
-	active_menu = new_menu
+	global active_transition_animation
+	active_transition_animation = log_shift_menus(start_time=time, menu=menu, direction='right')
+
 
 
 def _test_button_action(source):
-	global active_menu, active_transition_animation
-	new_menu = menus['mainmenu']
-	active_transition_animation = shift_menus(start_time=time, menu1=active_menu, menu2=new_menu, direction='right')
-	active_menu = new_menu
+	global active_transition_animation
+	active_transition_animation = log_shift_menus(start_time=time, menu=menu, direction='left')
 
 
 
-
-
-
-class Menu:
-	def __init__(self, widgets=[], SIZE=(1280, 720), bkgr_color=(0,0,0)):
-		self.SIZE = SIZE
-		self.widgets = widgets
-		self.draw_surface = pg.Surface(SIZE)
-		self.bkgr_color = bkgr_color
-		self.hidden = True
-
-
-
-	def add_widget(self, widget):
-		self.widgets.append(widget)
-
-
-	def update(self, *args, **kwargs):
-		draw_surface = self.draw_surface
-		# draw_surface.fill(self.bkgr_color)
-		for widget in self.widgets:
-			if widget.updatable:
-				widget.update(*args, **kwargs)
-			widget.draw(draw_surface)
-
-
-
-class MainMenu(Menu):
-	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
-
-		#add widgets
-		self.widgets = []
-		#title label
-		size = (800, 200)
-		font = pg.font.match_font('mono')
-		self.widgets.append( widg.Label(pos=(self.SIZE[0]//2 - size[0]//2, self.SIZE[1]//2 - size[1]//2 - 150), size=size, font=font, font_size=100, text='Main Menu', justify_x='center', justify_y='center') )
-		
-		#button
-		size = (200, 100)
-		font = pg.font.match_font('mono')
-		self.widgets.append( widg.Button(pos=(self.SIZE[0]//2 - size[0]//2, self.SIZE[1]//2 - size[1]//2 + 150), size=size, font=font, font_size=50, text='Start', justify_x='center', justify_y='center', action=_start_button_action) )
-
-
-	def update(self, *args, **kwargs):
-		draw_surface = self.draw_surface
-		# draw_surface.fill(self.bkgr_color)
-
-		for widget in self.widgets:
-			if widget.updatable:
-				widget.update(*args, **kwargs)
-			widget.draw(draw_surface)
-
-
-class TestMenu(Menu):
-	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
-
-		
-		font = pg.font.match_font('roman')
-
-		#add widgets
-		self.widgets = []
-		#title label
-		size = (800, 200)
-		self.widgets.append( widg.Label(pos=(self.SIZE[0]//2 - size[0]//2, self.SIZE[1]//2 - size[1]//2), size=size, font=font, font_size=100, text='Second Menu', justify_x='center', justify_y='center') )
-		#button
-		size = (200, 100)
-		self.widgets.append( widg.Button(pos=(self.SIZE[0]//2 - size[0]//2, self.SIZE[1]//2 - size[1]//2 + 200), size=size, font=font, font_size=50, text='Back', justify_x='center', justify_y='center', action=_test_button_action) )
 
 
 
 
 def mainloop(SIZE=(1280,720), FPS=120):
-
+	global menu
+	m = menu
 	s = screen.Screen(SIZE)
 
 	rungame = True
@@ -180,19 +133,103 @@ def mainloop(SIZE=(1280,720), FPS=120):
 
 
 
-		if active_transition_animation is not None:
-			active_transition_animation.update()
+		try: active_transition_animation.update()
+		except: pass
 
 
-		for key, val in menus.items():
-			if not val.hidden:
-				val.draw_surface.fill(val.bkgr_color)
-				val.update(mouse_event=list(filter(lambda x: x.type == pg.MOUSEBUTTONDOWN, events)))
-				s.update(val)
+		m.draw_surface.fill(m.bkgr_color)
+		m.update(mouse_event=list(filter(lambda x: x.type == pg.MOUSEBUTTONDOWN, events)))
+		s.update(m)
 
 
-menus = {'mainmenu': MainMenu(), 'testmenu': TestMenu()}
 
-active_menu = menus['mainmenu']
-active_menu.hidden = False
+class Menu:
+	def __init__(self, SIZE=(1280, 720), bkgr_color=(0,0,0)):
+		self.SIZE = SIZE
+		self.screen_rect = pg.Rect((0,0),SIZE)
+		self.widgets = []
+		self.draw_surface = pg.Surface(SIZE)
+		self.bkgr_color = bkgr_color
+		self.visible = True
+		self.menu_offset = np.array([0,0])
+
+		font = pg.font.match_font('roman')
+
+
+
+		#add widgets
+
+		####====== MAIN MENU ======####
+		offset = np.asarray((0, 0))
+		#title label
+		size = (800, 200)
+		pos = (self.SIZE[0]//2 - size[0]//2, self.SIZE[1]//2 - size[1]//2 - 150)
+		self.widgets.append( widg.Label(pos=np.asarray(pos)+offset+self.menu_offset, 
+										size=size, 
+										font=font, 
+										font_size=100, 
+										text='Main Menu', 
+										justify_x='center', 
+										justify_y='center') )
+		
+		#button
+		size = (200, 100)
+		pos = (self.SIZE[0]//2 - size[0]//2, self.SIZE[1]//2 - size[1]//2 + 150)
+		self.widgets.append( widg.Button(pos=np.asarray(pos)+offset+self.menu_offset, 
+										 size=size, 
+										 font=font, 
+										 font_size=50, 
+										 text='Start', 
+										 justify_x='center', 
+										 justify_y='center', 
+										 command=_start_button_action) )
+
+		#button
+		size = (200, 100)
+		pos = (self.SIZE[0]//2 - size[0]//2, self.SIZE[1]//2 - size[1]//2 + 300)
+		self.widgets.append( widg.Button(pos=np.asarray(pos)+offset+self.menu_offset, 
+										 size=size, 
+										 font=font, 
+										 font_size=50, 
+										 text='Colours', 
+										 justify_x='center', 
+										 justify_y='center', 
+										 command=_colour_button_action, 
+										 enable_hover=False) )
+
+
+		####====== TEST MENU ======####
+		offset = np.asarray((-SIZE[0], 0))
+		#label
+		size = (800, 200)
+		pos = (self.SIZE[0]//2 - size[0]//2, self.SIZE[1]//2 - size[1]//2)
+		self.widgets.append( widg.Label(pos=np.asarray(pos)+offset+self.menu_offset, size=size, font=font, font_size=100, text='Second Menu', justify_x='center', justify_y='center') )
+		#button
+		size = (200, 100)
+		pos = (self.SIZE[0]//2 - size[0]//2, self.SIZE[1]//2 - size[1]//2 + 200)
+		self.widgets.append( widg.Button(pos=np.asarray(pos)+offset+self.menu_offset, size=size, font=font, font_size=50, text='Back', justify_x='center', justify_y='center', command=_test_button_action) )
+
+
+	def update_widget_pos(self):
+		for widget in self.widgets:
+			widget.pos = widget.original_pos + self.menu_offset
+
+
+	def update(self, *args, **kwargs):
+		draw_surface = self.draw_surface
+		self.update_widget_pos()
+		for widget in self.widgets:
+			#draw widget if it is on screen
+			if self.screen_rect.colliderect(widget.rect):
+				#update widget if it needs updating
+				if widget.updatable:
+					widget.update(*args, **kwargs)
+				widget.draw(draw_surface)
+
+
+
 active_transition_animation = None
+menu = Menu()
+
+
+

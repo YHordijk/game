@@ -5,17 +5,21 @@ import copy
 
 
 class Widget:
-	def __init__(self, pos=None, size=None, color=None, img=None):
+	def __init__(self, pos=None, size=None, colour=None, img=None):
 		self.pos = np.asarray(pos)
 		self.original_pos = copy.copy(self.pos)
 		self.size = size
-		self.rect = pg.Rect(pos, size)
-		self.color = color
+		self.colour = colour
 		self.img = img
 		self.updatable = False
 
-		if color is None and img is None:
-			self.color = (255,255,255)
+		if colour is None and img is None:
+			self.colour = (255,255,255)
+
+	@property
+	def rect(self):
+		return pg.Rect(self.pos, self.size)
+	
 
 	def set_text(self, text):
 		self.text = text
@@ -45,8 +49,8 @@ class Label(Widget):
 
 	def update_draw_surface(self):
 		self.draw_surface = pg.surface.Surface(self.size)
-		self.draw_surface.fill(self.color)
-		pg.draw.rect(self.draw_surface, self.color, self.rect)
+		self.draw_surface.fill(self.colour)
+		pg.draw.rect(self.draw_surface, self.colour, self.rect)
 		if not self.text is None:
 			text = self.font.render(self.text, True, self.font_colour)
 
@@ -83,23 +87,35 @@ class Label(Widget):
 
 
 class Button(Label):
-	def __init__(self, action=None, *args, **kwargs):
+	def __init__(self, command=None, enable_hover=True, hover_colour=(150,0,150), *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.updatable = True
-		self.action = action
+		self.command = command
+		self.enable_hover = enable_hover
 		self.times_pressed = 0
+		self.neutral_colour = copy.copy(self.colour)
+		self.hover_colour = hover_colour
 
 	def update(self, mouse_event):
-		if len(mouse_event) == 0:
-			return 
+		if self.enable_hover:
 
-		but = mouse_event[0].button
-		mouse_pos = mouse_event[0].pos
-		if not but== 1:
-			return
+			do_update = True
+			if self.rect.collidepoint(pg.mouse.get_pos()):
+				if self.colour == self.hover_colour: do_update = False
+				self.colour = self.hover_colour
+			else:
+				if self.colour == self.neutral_colour: do_update = False
+				self.colour = self.neutral_colour
+			if do_update: self.update_draw_surface()
 
-		if self.pos[0] < mouse_pos[0] < self.pos[0] + self.size[0]:
-			if self.pos[1] < mouse_pos[1] < self.pos[1] + self.size[1]:
+
+
+		if self.rect.collidepoint(pg.mouse.get_pos()):
+			if len(mouse_event) >= 1:
+				but = mouse_event[0].button
 				self.times_pressed += 1
-				self.action(self)
+				if but == 1:
+					self.command(self)
+
+		
 
