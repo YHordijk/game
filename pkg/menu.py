@@ -12,30 +12,41 @@ class TransitionAnimation:
 
 
 class shift_menus(TransitionAnimation):
-	def __init__(self, menu1, menu2, direction='right', duration=1, *args, **kwargs):
+	def __init__(self, menu1, menu2, direction='right', duration=0.4, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.menu1 = menu1
 		self.menu2 = menu2
 		self.direction = direction
 		self.duration = duration
 
+		if direction == 'right':
+			for widget in menu2.widgets:
+				widget.pos = (widget.original_pos[0] - menu2.SIZE[0], widget.original_pos[1])
+
 	def update(self):
 		s = self.menu1.SIZE
+
+		progress = min((time - self.start_time)/self.duration, 1)
+
+		self.menu1.hidden = False
+		self.menu2.hidden = False
+		print(progress)
 
 		for widget in self.menu1.widgets:
 			if self.direction == 'right':
 				target_pos = np.array([widget.original_pos[0] + s[0], widget.original_pos[1]])
-				widget.set_text(f'{target_pos} {widget.original_pos}')
-				widget.pos = (target_pos - widget.pos) * 0.0001
-
-			if widget.pos[0] == target_pos[0]:
-				active_transition_animation	= None
+				widget.pos[0] = (target_pos[0] - widget.original_pos[0]) * progress
 
 		for widget in self.menu2.widgets:
 			if self.direction == 'right':
 				target_pos = np.array([widget.original_pos[0], widget.original_pos[1]])
 				widget.pos = (target_pos - widget.pos) * 0.2
 
+
+		if time >= self.duration + self.start_time:
+			global active_transition_animation
+			active_transition_animation = None
+			self.menu1.hidden = True
 
 
 
@@ -89,6 +100,7 @@ class Menu:
 
 	def update(self, *args, **kwargs):
 		draw_surface = self.draw_surface
+		# draw_surface.fill(self.bkgr_color)
 		for widget in self.widgets:
 			if widget.updatable:
 				widget.update(*args, **kwargs)
@@ -115,13 +127,9 @@ class MainMenu(Menu):
 
 	def update(self, *args, **kwargs):
 		draw_surface = self.draw_surface
-		draw_surface.fill(self.bkgr_color)
-
-		self.widgets[0].set_text(f'{time:.2f}')
+		# draw_surface.fill(self.bkgr_color)
 
 		for widget in self.widgets:
-			widget.pos[0] = widget.original_pos[0] + math.sin(time*5) * 50
-
 			if widget.updatable:
 				widget.update(*args, **kwargs)
 			widget.draw(draw_surface)
@@ -160,7 +168,7 @@ def mainloop(SIZE=(1280,720), FPS=120):
 	while rungame:
 
 		events = pg.event.get()
-		s.clear()
+		# s.clear()
 		#pre-update
 		for event in events:
 			if event.type == pg.QUIT:

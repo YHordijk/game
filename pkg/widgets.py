@@ -1,12 +1,13 @@
 import pygame as pg
 import numpy as np
+import copy
 
 
 
 class Widget:
 	def __init__(self, pos=None, size=None, color=None, img=None):
-		self.original_pos = np.asarray(pos)
 		self.pos = np.asarray(pos)
+		self.original_pos = copy.copy(self.pos)
 		self.size = size
 		self.rect = pg.Rect(pos, size)
 		self.color = color
