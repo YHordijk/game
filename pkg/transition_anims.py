@@ -49,7 +49,7 @@ class shift_menus(TransitionAnimation):
 
 
 class exp_shift_menus(TransitionAnimation):
-	def __init__(self, direction='right', duration=0.4, speed=17, *args, **kwargs):
+	def __init__(self, direction='right', duration=0.4, speed=50, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.direction = direction
 		self.duration = duration
@@ -61,24 +61,23 @@ class exp_shift_menus(TransitionAnimation):
 
 		progress = min((time - self.start_time)/self.duration, 1)
 
-		step_size = dT/self.duration
-		if progress > 1:
-			step_size -= progress - 1
-			progress = 1
+		# step_size = dT/self.duration
+		# if progress > 1:
+		# 	step_size -= progress - 1
+		# 	progress = 1
 
 		if self.direction == 'right':
-			d = np.array([s[0], 0]) + self.original_offset
-			menu.menu_offset = menu.menu_offset + (d - menu.menu_offset)*min(self.speed*dT,1)
-		if self.direction == 'left':
-			d = np.array([-s[0], 0]) + self.original_offset
-			menu.menu_offset = menu.menu_offset + (d - menu.menu_offset)*min(self.speed*dT,1)
-		if self.direction == 'up':
-			d = np.array([0, s[1]]) + self.original_offset
-			menu.menu_offset = menu.menu_offset + (d - menu.menu_offset)*min(self.speed*dT,1)
-		if self.direction == 'down':
-			d = np.array([0, -s[1]]) + self.original_offset
-			menu.menu_offset = menu.menu_offset + (d - menu.menu_offset)*min(self.speed*dT,1)
+			d = np.array([ s[0], 0])
+		elif self.direction == 'left':
+			d = np.array([-s[0], 0])
+		elif self.direction == 'up':
+			d = np.array([0,  s[1]])
+		elif self.direction == 'down':
+			d = np.array([0, -s[1]])
+
+		print(d, (1-(self.speed**(1-progress)-1)/(self.speed-1)))
+		menu.menu_offset = self.original_offset + d * (1-(self.speed**(1-progress)-1)/(self.speed-1))
 
 
 		if progress == 1:
-			menu.menu_offset = d
+			menu.menu_offset = d + self.original_offset

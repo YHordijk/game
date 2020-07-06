@@ -103,7 +103,7 @@ class Label(Widget):
 
 
 	def draw(self, surf):
-		surf.set_colorkey((255,0,123))
+		surf.set_colorkey(self.colour_key)
 		return surf.blit(self.draw_surface, self.pos)
 
 
@@ -145,17 +145,15 @@ class Button(Label):
 		
 
 class Dialogue(Widget):
-	def __init__(self, text_file=None, text_margin=(20,20), font=None, font_size=None, font_colour=None, justify_x='left', justify_y='top', *args, **kwargs):
+	def __init__(self, text_file=None, text_margin=(20,20), alpha=120, font=None, font_size=None, font_colour=None, justify_x='left', justify_y='top', *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
-		# self.pos = np.asarray()
-		# self.size = np.asarray((1280,100))
-		# self.original_pos = copy.copy(self.pos)
-		
 		if font_size is not None: self.font_size = font_size
 		elif font_size is None and font is not None: self.font_size = max(self.rect.size[1], 12)
 
 		self.font = pg.font.Font(font, self.font_size)
+
+		self.alpha = alpha
 			
 		self.text_file = text_file
 		self.load_text()
@@ -194,14 +192,13 @@ class Dialogue(Widget):
 
 
 	def update_draw_surface(self):
-		self.draw_surface = pg.surface.Surface(self.rect.size)
-		self.draw_surface.fill(self.colour_key)
+		self.draw_surface = pg.surface.Surface(self.rect.size, pg.SRCALPHA)
+		self.draw_surface.fill((*self.colour,self.alpha))
 
-		if hasattr(self, 'polygon'):
-			print(self.polygon.verteces.tolist())
-			pg.draw.polygon(self.draw_surface, self.colour, self.polygon.verteces.tolist())
-		else:
-			pg.draw.rect(self.draw_surface, self.colour, ((0,0), self.rect.size))
+		# if hasattr(self, 'polygon'):
+		# 	pg.draw.polygon(self.draw_surface, (*self.colour,self.alpha), self.polygon.verteces.tolist())
+		# else:
+		# 	pg.draw.rect(self.draw_surface, (*self.colour,self.alpha), ((0,0), self.rect.size))
 
 
 		speaker = self.font.render(self.speakers[self.text_index], True, self.font_colour)
@@ -239,9 +236,9 @@ class Dialogue(Widget):
 			if len(mouse_event) >= 1:
 				but = mouse_event[0].button
 				if but == 1:
-					self.text_index += 1
+					self.text_index = (self.text_index + 1)%len(self.lines)
 					self.update_draw_surface()
 
 	def draw(self, surf):
-		surf.set_colorkey((255,0,123))
+		surf.set_colorkey(self.colour_key)
 		return surf.blit(self.draw_surface, self.pos)

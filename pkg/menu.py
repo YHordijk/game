@@ -57,6 +57,7 @@ def mainloop(SIZE=(1280,720), FPS=120):
 		dT = clock.tick_busy_loop(FPS)/1000
 		time += dT
 		updt += 1
+		# print(1/dT)
 
 
 		try: 
@@ -74,7 +75,7 @@ def mainloop(SIZE=(1280,720), FPS=120):
 
 
 class Menu:
-	def __init__(self, SIZE=(1280, 720), bkgr_color=(0,0,0)):
+	def __init__(self, SIZE=(1280, 720), bkgr_color=(120,0,250)):
 		self.SIZE = SIZE
 		self.screen_rect = pg.Rect((0,0),SIZE)
 		self.widgets = []
