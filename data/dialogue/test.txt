@@ -1,0 +1,9 @@
+Person A:This is some test dialogue
+Person B:I'll need to think of some more options for text, like colours and animations
+Tester:is
+Tester:some
+Tester:test
+Tester:dialogue
+Tester:test
+Tester:test2
+Tester:test3

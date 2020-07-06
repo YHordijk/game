@@ -3,7 +3,7 @@ import numpy as np
 import pkg.screen as screen
 import pkg.widgets as widg
 import pkg.transition_anims as tr_anim
-import copy, math
+import copy, math, os
 
 
 
@@ -139,7 +139,7 @@ class Menu:
 										polygon=verts, 
 										font=font, 
 										font_size=100, 
-										text='Settings Menu', 
+										text='Settings', 
 										justify_x='center', 
 										justify_y='center') )
 		#button
@@ -153,6 +153,13 @@ class Menu:
 										 justify_x='center', 
 										 justify_y='center', 
 										 command=_test_button_action) )
+		size = (self.SIZE[0], 200)
+		pos = (0, self.SIZE[1]-200)
+		self.widgets.append( widg.Dialogue(pos=np.asarray(pos)+offset+self.menu_offset,
+										   size=size,
+										   font=font, 
+										   font_size=30, 
+										   text_file=dialogue_dir + 'test.txt'))
 
 
 	def update_widget_pos(self):
@@ -173,6 +180,8 @@ class Menu:
 
 
 
+
+dialogue_dir = os.getcwd() + r'\data\dialogue\\'
 active_transition_animation = None
 menu = Menu()
 
