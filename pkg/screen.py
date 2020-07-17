@@ -9,12 +9,14 @@ class Screen:
 		self.bkgr_color = bkgr_color
 		self.disp.fill(self.bkgr_color)
 
-	def update(self, surf):
+	def update(self, menu):
 		try:
-			self.disp.blit(surf.draw_surface, (0,0))
+			self.disp.blit(menu.draw_surface, (0,0))
+			# if menu.draw_mask:
+			self.disp.blit(menu.mask_surface, (0,0))
 			pg.display.update()
 		except:
-			raise Exception('Surf does not contain draw_surface')
+			raise Exception('Menu does not contain draw_surface')
 
 	def clear(self):
 		self.disp.fill(self.bkgr_color)

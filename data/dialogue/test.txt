@@ -1,9 +1,11 @@
-Person A:This is some test dialogue
-Person B:I'll need to think of some more options for text, like colours and animations
-Tester:is
-Tester:some
-Tester:test
-Tester:dialogue
-Tester:test
-Tester:test2
-Tester:test3
+\newtext{Person A}
+\background{castle_hall}
+Hello, this is Person A speaking! This is some test dialogue for the engine. \bold{This is some bold text.} \italics{This is some italics text.} \underline{This is some underlined text!} \bold{\italics{This text is bold AND italics!}} \color{red}{This text will be red!!} \color{(0,2,4)}{This text will have the color (0,2,4)}
+
+
+\newtext{Person B}
+\background{castle_garden}
+I am Person B as you can see on top of the text-box.
+
+\newtext{Person C}
+I am Person C as you can see on top of the text-box.

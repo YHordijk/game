@@ -22,16 +22,15 @@ def _colour_button_action(source):
 	source.update_draw_surface()
 
 
-def _start_button_action(source):
+def command_shift_menu(source, direction='right', duration=0.4, **kwargs):
 	global active_transition_animation
 	if active_transition_animation is None:
-		active_transition_animation = tr_anim.exp_shift_menus(start_time=time, menu=menu, direction='right')
+		active_transition_animation = tr_anim.exp_shift_menus(start_time=time, menu=menu, direction=direction, duration=duration, **kwargs)
 
-
-def _test_button_action(source):
+def command_fade_menu(source, direction='right', duration=1, **kwargs):
 	global active_transition_animation
 	if active_transition_animation is None:
-		active_transition_animation = tr_anim.exp_shift_menus(start_time=time, menu=menu, direction='left')
+		active_transition_animation = tr_anim.fade_out(start_time=time, menu=menu, direction=direction, duration=duration, **kwargs)
 
 
 
@@ -48,6 +47,7 @@ def mainloop(SIZE=(1280,720), FPS=120):
 	time = 0
 
 	while rungame:
+
 		events = pg.event.get()
 		#pre-update
 		for event in events:
@@ -57,17 +57,16 @@ def mainloop(SIZE=(1280,720), FPS=120):
 		dT = clock.tick_busy_loop(FPS)/1000
 		time += dT
 		updt += 1
-		# print(1/dT)
 
+		# print(1/dT)
 
 		try: 
 			active_transition_animation.update(time, dT)
 			if time - active_transition_animation.start_time > active_transition_animation.duration:
 				active_transition_animation = None
-		except: pass
+		except Exception as e: pass
 
-
-
+		# print(m.bkgr_color)
 		m.draw_surface.fill(m.bkgr_color)
 		m.update(mouse_event=list(filter(lambda x: x.type == pg.MOUSEBUTTONDOWN, events)))
 		s.update(m)
@@ -80,8 +79,9 @@ class Menu:
 		self.screen_rect = pg.Rect((0,0),SIZE)
 		self.widgets = []
 		self.draw_surface = pg.Surface(SIZE)
+		self.mask_surface = pg.Surface(SIZE, pg.SRCALPHA)
+		self.draw_mask = False
 		self.bkgr_color = bkgr_color
-		self.visible = True
 		self.menu_offset = np.array([0,0])
 
 		font = pg.font.match_font('roman')
@@ -103,9 +103,9 @@ class Menu:
 										justify_x='center', 
 										justify_y='center') )
 		
-		#button
+		#play button
 		size = (200, 100)
-		pos = (self.SIZE[0]//2 - size[0]//2, self.SIZE[1]//2 - size[1]//2 + 150)
+		pos = (self.SIZE[0]//2 - size[0]//2, self.SIZE[1]//2 - size[1]//2 + 125)
 		self.widgets.append( widg.Button(pos=np.asarray(pos)+offset+self.menu_offset, 
 										 size=size, 
 										 font=font, 
@@ -113,20 +113,23 @@ class Menu:
 										 text='Start', 
 										 justify_x='center', 
 										 justify_y='center', 
-										 command=_start_button_action) )
+										 command=command_fade_menu,
+										 command_kwargs={'direction':'down'}) )
 
-		#button
+
+		#settings button
 		size = (200, 100)
-		pos = (self.SIZE[0]//2 - size[0]//2, self.SIZE[1]//2 - size[1]//2 + 300)
+		pos = (self.SIZE[0]//2 - size[0]//2, self.SIZE[1]//2 - size[1]//2 + 275)
 		self.widgets.append( widg.Button(pos=np.asarray(pos)+offset+self.menu_offset, 
 										 size=size, 
 										 font=font, 
 										 font_size=50, 
-										 text='Colours', 
+										 text='Settings', 
 										 justify_x='center', 
-										 justify_y='center', 
-										 command=_colour_button_action, 
-										 enable_hover=False) )
+										 justify_y='center',
+										 command=command_shift_menu,
+										 command_kwargs={'direction':'left', 'start_color':(250, 0, 120), 'target_color': (120, 0, 250)}, 
+										 enable_hover=True) )
 
 
 		####====== Settings MENU ======####
@@ -143,7 +146,7 @@ class Menu:
 										text='Settings', 
 										justify_x='center', 
 										justify_y='center') )
-		#button
+		#back button
 		size = (200, 100)
 		pos = (self.SIZE[0]//2 - size[0]//2, self.SIZE[1]//2 - size[1]//2 + 200)
 		self.widgets.append( widg.Button(pos=np.asarray(pos)+offset+self.menu_offset, 
@@ -153,14 +156,20 @@ class Menu:
 										 text='Back', 
 										 justify_x='center', 
 										 justify_y='center', 
-										 command=_test_button_action) )
+										 command=command_shift_menu,
+										 command_kwargs={'direction':'right', 'start_color':(120, 0, 250), 'target_color': (250, 0, 120)}) )
+
+
+		####====== MAIN GAME ======####
+		offset = np.asarray((0, SIZE[1]))
 		size = (self.SIZE[0], 200)
 		pos = (0, self.SIZE[1]-200)
 		self.widgets.append( widg.Dialogue(pos=np.asarray(pos)+offset+self.menu_offset,
 										   size=size,
 										   font=font, 
 										   font_size=30, 
-										   text_file=dialogue_dir + 'test.txt'))
+										   alpha = 120,
+										   text_files=[dialogue_dir + 'test.txt']))
 
 
 	def update_widget_pos(self):

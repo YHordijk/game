@@ -2,6 +2,7 @@ import pygame as pg
 import numpy as np
 import copy
 import pkg.polygon as pol
+import pkg.text as txt
 
 
 
@@ -70,7 +71,6 @@ class Label(Widget):
 		self.draw_surface.fill(self.colour_key)
 
 		if hasattr(self, 'polygon'):
-			print(self.polygon.verteces.tolist())
 			pg.draw.polygon(self.draw_surface, self.colour, self.polygon.verteces.tolist())
 		else:
 			pg.draw.rect(self.draw_surface, self.colour, ((0,0), self.rect.size))
@@ -112,10 +112,11 @@ class Label(Widget):
 
 
 class Button(Label):
-	def __init__(self, command=None, enable_hover=True, hover_colour=(150,0,150), *args, **kwargs):
+	def __init__(self, command=None, command_kwargs=None, enable_hover=True, hover_colour=(150,0,150), *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.updatable = True
 		self.command = command
+		self.command_kwargs = command_kwargs
 		self.enable_hover = enable_hover
 		self.times_pressed = 0
 		self.neutral_colour = copy.copy(self.colour)
@@ -135,17 +136,46 @@ class Button(Label):
 				self.colour = self.neutral_colour
 			if do_update: self.update_draw_surface()
 
+		if self.command is None: return
 		if collides:
 			if len(mouse_event) >= 1:
 				but = mouse_event[0].button
 				self.times_pressed += 1
 				if but == 1:
-					self.command(self)
+					self.command(self, **self.command_kwargs)
 
 		
 
 class Dialogue(Widget):
-	def __init__(self, text_file=None, text_margin=(20,20), alpha=120, font=None, font_size=None, font_colour=None, justify_x='left', justify_y='top', *args, **kwargs):
+	# def __init__(self, text_file=None, text_margin=(20,20), alpha=120, font=None, font_size=None, font_colour=None, justify_x='left', justify_y='top', *args, **kwargs):
+	# 	super().__init__(*args, **kwargs)
+
+	# 	if font_size is not None: self.font_size = font_size
+	# 	elif font_size is None and font is not None: self.font_size = max(self.rect.size[1], 12)
+
+	# 	self.font = pg.font.Font(font, self.font_size)
+
+	# 	self.alpha = alpha
+			
+	# 	self.text_file = text_file
+	# 	self.load_text()
+
+	# 	self.text_margin = np.asarray(text_margin)
+
+	# 	self.text_index = 0
+
+	# 	if font_colour is not None: self.font_colour = font_colour
+	# 	else: self.font_colour = (0,0,0)
+
+	# 	self.justify_x = justify_x
+	# 	self.justify_y = justify_y
+
+	# 	self.updatable = True
+
+
+	# 	self.update_draw_surface()
+
+	def __init__(self, text_files=None, text_margin=(20,20), alpha=120, font=None, font_size=None, speaker_color=None, justify_x='left', justify_y='top', *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
 		if font_size is not None: self.font_size = font_size
@@ -155,21 +185,23 @@ class Dialogue(Widget):
 
 		self.alpha = alpha
 			
-		self.text_file = text_file
-		self.load_text()
+		# self.text_file = text_file
+		# self.load_text()
 
 		self.text_margin = np.asarray(text_margin)
-
+		self.text_pos = [40,40]
 		self.text_index = 0
 
-		if font_colour is not None: self.font_colour = font_colour
-		else: self.font_colour = (0,0,0)
+		if speaker_color is not None: self.speaker_color = speaker_color
+		else: self.speaker_color = (0,0,0)
 
 		self.justify_x = justify_x
 		self.justify_y = justify_y
 
 		self.updatable = True
 
+
+		self.text_list = txt.Parser().get_text(text_files, text_size=self.size - self.text_margin - self.text_pos)
 
 		self.update_draw_surface()
 
@@ -191,41 +223,51 @@ class Dialogue(Widget):
 		self.speakers = speakers
 
 
+	# def update_draw_surface(self):
+	# 	self.draw_surface = pg.surface.Surface(self.rect.size, pg.SRCALPHA)
+	# 	self.draw_surface.fill((*self.colour,self.alpha))
+
+	# 	# if hasattr(self, 'polygon'):
+	# 	# 	pg.draw.polygon(self.draw_surface, (*self.colour,self.alpha), self.polygon.verteces.tolist())
+	# 	# else:
+	# 	# 	pg.draw.rect(self.draw_surface, (*self.colour,self.alpha), ((0,0), self.rect.size))
+
+
+	# 	speaker = self.font.render(self.speakers[self.text_index], True, self.font_colour)
+	# 	line = self.font.render(self.lines[self.text_index], True, self.font_colour)
+
+	# 	text_pos = [0,0]
+
+	# 	if self.justify_x == 'left':
+	# 		text_pos[0] = 0
+
+	# 	if self.justify_x == 'center':
+	# 		text_pos[0] = (self.rect.size[0] - line.get_size()[0])//2
+
+	# 	if self.justify_x == 'right':
+	# 		text_pos[0] = (self.rect.size[0] - line.get_size()[0])
+
+	# 	if self.justify_y == 'top':
+	# 		text_pos[1] = 0
+
+	# 	if self.justify_y == 'center':
+	# 		text_pos[1] = (self.rect.size[1] - line.get_size()[1])//2
+
+	# 	if self.justify_y == 'bottom':
+	# 		text_pos[1] = (self.rect.size[1] - line.get_size()[1])
+
+
+	# 	self.draw_surface.blit(line, text_pos + self.text_margin + np.array([40,40]))
+	# 	self.draw_surface.blit(speaker, self.text_margin)
+
+
 	def update_draw_surface(self):
 		self.draw_surface = pg.surface.Surface(self.rect.size, pg.SRCALPHA)
-		self.draw_surface.fill((*self.colour,self.alpha))
+		self.draw_surface.fill((*self.colour, self.alpha))
+		
+		self.draw_surface.blit(self.text_list[self.text_index].text_surf, self.text_pos + self.text_margin)
 
-		# if hasattr(self, 'polygon'):
-		# 	pg.draw.polygon(self.draw_surface, (*self.colour,self.alpha), self.polygon.verteces.tolist())
-		# else:
-		# 	pg.draw.rect(self.draw_surface, (*self.colour,self.alpha), ((0,0), self.rect.size))
-
-
-		speaker = self.font.render(self.speakers[self.text_index], True, self.font_colour)
-		line = self.font.render(self.lines[self.text_index], True, self.font_colour)
-
-		text_pos = [0,0]
-
-		if self.justify_x == 'left':
-			text_pos[0] = 0
-
-		if self.justify_x == 'center':
-			text_pos[0] = (self.rect.size[0] - line.get_size()[0])//2
-
-		if self.justify_x == 'right':
-			text_pos[0] = (self.rect.size[0] - line.get_size()[0])
-
-		if self.justify_y == 'top':
-			text_pos[1] = 0
-
-		if self.justify_y == 'center':
-			text_pos[1] = (self.rect.size[1] - line.get_size()[1])//2
-
-		if self.justify_y == 'bottom':
-			text_pos[1] = (self.rect.size[1] - line.get_size()[1])
-
-
-		self.draw_surface.blit(line, text_pos + self.text_margin + np.array([40,40]))
+		speaker = self.font.render(self.text_list[self.text_index].speaker, True, self.speaker_color)
 		self.draw_surface.blit(speaker, self.text_margin)
 
 
@@ -236,8 +278,9 @@ class Dialogue(Widget):
 			if len(mouse_event) >= 1:
 				but = mouse_event[0].button
 				if but == 1:
-					self.text_index = (self.text_index + 1)%len(self.lines)
+					self.text_index = (self.text_index + 1)%len(self.text_list)
 					self.update_draw_surface()
+
 
 	def draw(self, surf):
 		surf.set_colorkey(self.colour_key)

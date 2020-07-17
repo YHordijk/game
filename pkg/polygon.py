@@ -10,6 +10,7 @@ def collidelines(l1, l2):
 			return True
 	return False
 
+
 class Polygon:
 	def __init__(self, verteces):
 		self.verteces = np.asarray(verteces)
