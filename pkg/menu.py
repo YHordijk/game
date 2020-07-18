@@ -33,12 +33,17 @@ def command_fade_menu(source, direction='right', duration=1, **kwargs):
 		active_transition_animation = tr_anim.fade_out(start_time=time, menu=menu, direction=direction, duration=duration, **kwargs)
 
 
+def command_start_button(source, direction='right', duration=1, **kwargs):
+	global active_transition_animation
+	if active_transition_animation is None:
+		active_transition_animation = tr_anim.fade_out(start_time=time, menu=menu, direction=direction, duration=duration, **kwargs)
+	menu.widgets[-1].text_index = 0
+	menu.widgets[-1].handle_events(0)
+
 
 def mainloop(SIZE=(1280,720), FPS=120):
-	global menu, active_transition_animation
+	global s, menu, active_transition_animation
 	m = menu
-	s = screen.Screen(SIZE)
-
 	rungame = True
 	clock = pg.time.Clock()
 
@@ -67,14 +72,17 @@ def mainloop(SIZE=(1280,720), FPS=120):
 		except Exception as e: pass
 
 		# print(m.bkgr_color)
-		m.draw_surface.fill(m.bkgr_color)
+		if m.background is not None:
+			m.draw_surface.blit(m.background, (0,0))
+		else:
+			m.draw_surface.fill(m.bkgr_color)
 		m.update(mouse_event=list(filter(lambda x: x.type == pg.MOUSEBUTTONDOWN, events)))
 		s.update(m)
 
 
 
 class Menu:
-	def __init__(self, SIZE=(1280, 720), bkgr_color=(120,0,250)):
+	def __init__(self, SIZE=(1280, 720), bkgr_color=(120,0,250), background=None):
 		self.SIZE = SIZE
 		self.screen_rect = pg.Rect((0,0),SIZE)
 		self.widgets = []
@@ -82,6 +90,7 @@ class Menu:
 		self.mask_surface = pg.Surface(SIZE, pg.SRCALPHA)
 		self.draw_mask = False
 		self.bkgr_color = bkgr_color
+		self.background = background
 		self.menu_offset = np.array([0,0])
 
 		font = pg.font.match_font('roman')
@@ -95,7 +104,8 @@ class Menu:
 		#title label
 		size = (800, 200)
 		pos = (self.SIZE[0]//2 - size[0]//2, self.SIZE[1]//2 - size[1]//2 - 150)
-		self.widgets.append( widg.Label(pos=np.asarray(pos)+offset+self.menu_offset, 
+		self.widgets.append( widg.Label(parent=self,
+										pos=np.asarray(pos)+offset+self.menu_offset, 
 										size=size, 
 										font=font, 
 										font_size=100, 
@@ -106,21 +116,23 @@ class Menu:
 		#play button
 		size = (200, 100)
 		pos = (self.SIZE[0]//2 - size[0]//2, self.SIZE[1]//2 - size[1]//2 + 125)
-		self.widgets.append( widg.Button(pos=np.asarray(pos)+offset+self.menu_offset, 
+		self.widgets.append( widg.Button(parent=self,
+										 pos=np.asarray(pos)+offset+self.menu_offset, 
 										 size=size, 
 										 font=font, 
 										 font_size=50, 
 										 text='Start', 
 										 justify_x='center', 
 										 justify_y='center', 
-										 command=command_fade_menu,
+										 command=command_start_button,
 										 command_kwargs={'direction':'down'}) )
 
 
 		#settings button
 		size = (200, 100)
 		pos = (self.SIZE[0]//2 - size[0]//2, self.SIZE[1]//2 - size[1]//2 + 275)
-		self.widgets.append( widg.Button(pos=np.asarray(pos)+offset+self.menu_offset, 
+		self.widgets.append( widg.Button(parent=self,
+										 pos=np.asarray(pos)+offset+self.menu_offset, 
 										 size=size, 
 										 font=font, 
 										 font_size=50, 
@@ -139,7 +151,8 @@ class Menu:
 		width = 150
 		verts = [(width, 0), (size[0]+width, 0), (size[0], size[1]), (0, size[1])]
 		pos = (self.SIZE[0]//2 - size[0]//2 - width//2, 50)
-		self.widgets.append( widg.Label(pos=np.asarray(pos)+offset+self.menu_offset, 
+		self.widgets.append( widg.Label(parent=self,
+										pos=np.asarray(pos)+offset+self.menu_offset, 
 										polygon=verts, 
 										font=font, 
 										font_size=100, 
@@ -149,7 +162,8 @@ class Menu:
 		#back button
 		size = (200, 100)
 		pos = (self.SIZE[0]//2 - size[0]//2, self.SIZE[1]//2 - size[1]//2 + 200)
-		self.widgets.append( widg.Button(pos=np.asarray(pos)+offset+self.menu_offset, 
+		self.widgets.append( widg.Button(parent=self,
+										 pos=np.asarray(pos)+offset+self.menu_offset, 
 										 size=size, 
 										 font=font, 
 										 font_size=50, 
@@ -164,12 +178,19 @@ class Menu:
 		offset = np.asarray((0, SIZE[1]))
 		size = (self.SIZE[0], 200)
 		pos = (0, self.SIZE[1]-200)
-		self.widgets.append( widg.Dialogue(pos=np.asarray(pos)+offset+self.menu_offset,
+		self.widgets.append( widg.Dialogue(parent=self,
+										   pos=np.asarray(pos)+offset+self.menu_offset,
 										   size=size,
 										   font=font, 
 										   font_size=30, 
-										   alpha = 120,
+										   alpha = 200,
+										   default_text_color=(0,0,0),
 										   text_files=[dialogue_dir + 'test.txt']))
+
+
+	def set_background(self, file):
+		self.background = pg.image.load(file).copy().convert_alpha()
+		self.background = pg.transform.scale(self.background, self.SIZE)
 
 
 	def update_widget_pos(self):
@@ -190,7 +211,7 @@ class Menu:
 
 
 
-
+s = screen.Screen((1280,720))
 dialogue_dir = os.getcwd() + r'\data\dialogue\\'
 active_transition_animation = None
 menu = Menu()

@@ -1,13 +1,16 @@
 import pygame as pg
 import numpy as np
-import copy
+import copy, os
 import pkg.polygon as pol
 import pkg.text as txt
 
 
+data_dir = os.path.join(os.getcwd(), 'data\\')
+
 
 class Widget:
-	def __init__(self, pos=None, polygon=None, size=None, colour=None, img=None):
+	def __init__(self, parent=None, pos=None, polygon=None, size=None, colour=None, img=None):
+		self.parent = parent
 		self.pos = np.asarray(pos)
 		self.original_pos = copy.copy(self.pos)
 		self.size = size
@@ -175,7 +178,7 @@ class Dialogue(Widget):
 
 	# 	self.update_draw_surface()
 
-	def __init__(self, text_files=None, text_margin=(20,20), alpha=120, font=None, font_size=None, speaker_color=None, justify_x='left', justify_y='top', *args, **kwargs):
+	def __init__(self, text_files=None, text_margin=(20,20), alpha=120, font=None, font_size=None, speaker_color=None, default_text_color=(0,0,0), justify_x='left', justify_y='top', *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
 		if font_size is not None: self.font_size = font_size
@@ -201,7 +204,7 @@ class Dialogue(Widget):
 		self.updatable = True
 
 
-		self.text_list = txt.Parser().get_text(text_files, text_size=self.size - self.text_margin - self.text_pos)
+		self.text_list, self.events = txt.Parser().get_text(text_files, text_size=self.size - self.text_margin - self.text_pos, default_text_color=default_text_color)
 
 		self.update_draw_surface()
 
@@ -271,6 +274,17 @@ class Dialogue(Widget):
 		self.draw_surface.blit(speaker, self.text_margin)
 
 
+	def get_events_at_index(self, index):
+		return filter(lambda x: x[0] == index, self.events.events)
+
+
+	def handle_events(self, index):
+		events = self.get_events_at_index(index)
+		for event in events:
+			if event[1] == 'background':
+				self.parent.set_background(rf'{data_dir}\images\background\{event[2]}.png')
+
+
 	def update(self, mouse_event):
 		collides = self.collidepoint(pg.mouse.get_pos())
 
@@ -279,6 +293,7 @@ class Dialogue(Widget):
 				but = mouse_event[0].button
 				if but == 1:
 					self.text_index = (self.text_index + 1)%len(self.text_list)
+					self.handle_events(self.text_index)
 					self.update_draw_surface()
 
 

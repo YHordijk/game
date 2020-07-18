@@ -8,7 +8,7 @@ pg.init()
 
 #construct color dictionary
 color_path = os.getcwd() + r'/data/resources/colors.csv'
-color_path = r"D:\Users\Yuman\Desktop\Programmeren\Python\PyGame\game\data\resources\colors.csv"
+# color_path = r"D:\Users\Yuman\Desktop\Programmeren\Python\PyGame\game\data\resources\colors.csv"
 color_dict = {}
 with open(color_path, 'r') as f:
 	for color in f.readlines():
@@ -50,7 +50,7 @@ class Text:
 
 
 class Events:
-	def __init__(self, events):
+	def __init__(self, events=[]):
 		#events is dictionary with key text index and value event: bkgr change, transition, chars
 		self.events = events
 
@@ -59,7 +59,7 @@ class Events:
 
 
 class TextPart:
-	def __init__(self, text, flags, text_size=(1280,200), font_size=30, default_font='mono', default_color=(255,255,255)):
+	def __init__(self, text, flags, text_size=(1280,200), font_size=30, default_font='mono', default_text_color=(255,255,255)):
 		self.text = text
 		self.flags = flags
 		self.text_size = text_size
@@ -80,7 +80,7 @@ class TextPart:
 				self.color = [c for c in self.color if len(c) > 0]
 				self.color = int(self.color[0]), int(self.color[1]), int(self.color[2])
 		else:
-			self.color = default_color
+			self.color = default_text_color
 
 		self.font = list(filter(lambda x: 'font' in x, flags))
 		if len(self.font) > 0:
@@ -107,13 +107,15 @@ class TextPart:
 
 class Parser:
 	# @staticmethod
-	def get_text(self, files, text_size=(1280,200), default_font='mono', font_size=30):
+	def get_text(self, files, text_size=(1280,200), default_font='mono', font_size=30, default_text_color=(0,0,0)):
 		self.files = files
 		self.text_size = text_size
 		self.default_font = default_font
+		self.default_text_color = default_text_color
 		self.font_size = font_size
 
-		self.allowed_flags = ['newtext', 'bold', 'italics', 'underline', 'color', 'font']
+		self.text_flags = ['newtext', 'background', 'bold', 'italics', 'underline', 'color', 'font']
+		self.special_flags = ['background']
 
 		raw_text = self.load_files(files)
 		text_list = self.parse_text(raw_text)
@@ -136,13 +138,14 @@ class Parser:
 
 
 	def parse_text(self, raw_text):
+		events = Events()
 		text_list = []
 		for i, text in enumerate(raw_text):
 			# print(text)
 			
 			#split on \, { and }
 			splits = re.split(r'\\|{|}', text)
-			splits = ['\\' + s if s in self.allowed_flags else s for s in splits]
+			splits = ['\\' + s if s in self.text_flags else s for s in splits]
 			splits = [s for s in splits if len(s.strip()) > 0]
 
 
@@ -159,23 +162,26 @@ class Parser:
 			#get flags and text from splits
 			flags = []
 			skip_indices = []
-			for i, s in enumerate(splits):
-				if not i in skip_indices:
+			for j, s in enumerate(splits):
+				if not j in skip_indices:
 					if s.startswith('\\'):
-						flags.append(s.strip(r'\\'))
-						if flags[-1] in ['color', 'font']:
-							flags[-1] = flags[-1] + '_' + splits[i+1]
-							skip_indices.append(i+1)
-
+						if s == r'\background':
+							events.events.append((i, 'background', splits[j+1]))
+							skip_indices.append(j+1)
+						else:
+							flags.append(s.strip(r'\\'))
+							if flags[-1] in ['color', 'font']:
+								flags[-1] = flags[-1] + '_' + splits[j+1]
+								skip_indices.append(j+1)
 					else:
-						t = TextPart(s, flags, default_font=self.default_font, font_size=self.font_size, text_size=self.text_size)
+						t = TextPart(s, flags, default_text_color=self.default_text_color, default_font=self.default_font, font_size=self.font_size, text_size=self.text_size)
 						text_obj.text_parts.append(t)
 						flags = []
 
 			text_list.append(text_obj)
 
 		[t.get_text_surf() for t in text_list]
-		return text_list
+		return text_list, events
 
 
 
