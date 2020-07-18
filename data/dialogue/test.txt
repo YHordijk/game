@@ -1,16 +1,62 @@
-\newtext{Person A}
-\chars{angry_boy_1, happy_boy_1}{0.25, 0.75}
-\background{castle_hall}
-Hello, this is Person A speaking! This is some test dialogue for the engine. \bold{This is some bold text.} 
-\italics{This is some italics text.} \underline{This is some underlined text!} 
-\bold{\italics{This text is bold AND italics!}} \color{red}{This text will be red!!} 
-\color{(0,2,4)}{This text will have the color (0,2,4)}
-
-
-\newtext{Person B}
-\background{castle_garden}
-I am Person B as you can see on top of the text-box.
-
-\newtext{Person C}
+\newtext{Demo}
+\clearbackground{}
 \clearchars{}
-I am Person C as you can see on top of the text-box.
+This is a small demo on the text engine! We can add text to our text box and also add a speaker. This speaker is called Demo and you can find him on top of the text box.
+
+\newtext{Demo}
+If our text is too large to fit on one line of the text box it is automatically wrapped around. However I have not yet added support for overflowing text boxes!! So be carefull.
+
+\newtext{Demo}
+This background is a bit boring right? Let's add a picture as background!
+
+\newtext{Demo}
+\background{castle_hall}
+Much better! We are in the background called castle_hall now. We can add background images to data/images/backgrounds and use the name of the file in the dialogue files.
+
+\newtext{Demo}
+\background{castle_garden}
+We are now in the garden! 
+
+\newtext{Demo}
+\clearbackground{}
+We are now back in the void. Let's return to the hall.
+
+\newtext{Demo}
+\background{castle_hall}
+It is a bit lonely here, isn't it? How about we add some characters to our scene?
+
+\newtext{Demo}
+\chars{happy_boy_1}{0.5}
+Here is happy_boy_1! We can find his image file in data/images/characters. We can also add new images here and they can then be used in the game.
+
+\newtext{Demo}
+\chars{happy_boy_1}{0.2}
+Did happy_boy_1 just move? We can adjust the position of our character on the horizontal of our scene. Right now he is at 0.2, which means he is 20% from the left side of the screen.
+
+\newtext{Demo}
+\chars{happy_boy_1}{0.5}
+He is now back at positition 0.5. Positions are between 0 and 1. If you choose position outside of [0,1] he may disappear off screen!
+
+\newtext{happy_boy_1}
+Hi! I am happy_boy_1, I am now the speaker. I have a number of options for spicing up the text.
+
+\newtext{happy_boy_1}
+For example, \bold{this text will appear as bold}. \italics{This text is in italics}! We can also put a line under our \underline{text}.
+
+\newtext{happy_boy_1}
+We can also combine these text effects! \bold{\italics{This text is both bold AND italics!}} We can also change the color of our text! \color{red}{this text is red}, \color{blue}{this text is blue}, \color{blanched_almond}{this color is called Blanched almond, whatever that means}!
+
+\newtext{happy_boy_1}
+A large number of colors are available for you, take a look in data/resources/colors.csv. This csv file contains over 900 different colors. 
+
+\newtext{happy_boy_1}
+It is also possible to use your own colors if you think thats easier. For example: \bold{\color{140, 250, 80}{This text has the color (140, 250, 80).}} We use RGB colors from 0 to 255 to define our colors!
+
+\newtext{happy_boy_1}
+For example \bold{\color{255, 0, 0}{(255,0,0) is red}}, \bold{\color{0,255,0}{(0,255,0) is green}} and \bold{\color{0,0,255}{(0,0,255) is blue!}}
+
+\newtext{happy_boy_1}
+If you want a new feature to be added or if you're not sure how something works, just ask Yuman!
+
+\newtext{happy_boy_1}
+So far, the to-do list includes adding support for choices, input (so the user can type stuff too, for example the name for the mc) and animations. Of course the world map also needs to be made, but I have started on doing that already

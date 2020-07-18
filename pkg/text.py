@@ -71,9 +71,9 @@ class TextPart:
 
 		self.color = list(filter(lambda x: 'color' in x, flags))
 		if len(self.color) > 0:
-			self.color = self.color[0].split('_')[1]
+			self.color = self.color[0].split('|')[1]
 			try:
-				self.color = color_dict[self.color]
+				self.color = color_dict[self.color.lower()]
 			except:
 				self.color = self.color.strip('(').strip(')').split(',')
 				self.color = [c.strip() for c in self.color]
@@ -92,6 +92,8 @@ class TextPart:
 		self.font.set_italic(self.italics)
 		self.font.set_bold(self.bold)
 		self.font.set_underline(self.underline)
+
+		print(self)
 
 
 
@@ -114,8 +116,8 @@ class Parser:
 		self.default_text_color = default_text_color
 		self.font_size = font_size
 
-		self.text_flags = ['newtext', 'background', 'chars', 'clearchars', 'bold', 'italics', 'underline', 'color', 'font']
-		self.special_flags = ['background']
+		self.text_flags = ['newtext', 'background', 'clearbackground', 'chars', 'clearchars', 'bold', 'italics', 'underline', 'color', 'font']
+		# self.special_flags = ['background']
 
 		raw_text = self.load_files(files)
 		text_list = self.parse_text(raw_text)
@@ -165,7 +167,7 @@ class Parser:
 			for j, s in enumerate(splits):
 				if not j in skip_indices:
 					if s.startswith('\\'):
-						print(s)
+						# print(s)
 						if s == r'\background':
 							events.events.append((i, 'background', splits[j+1]))
 							skip_indices.append(j+1)
@@ -178,13 +180,15 @@ class Parser:
 							skip_indices.append(j+1)
 							skip_indices.append(j+2)
 
-						elif s == r'\clearchars':
-							events.events.append((i, 'clearchars'))
+						elif s in [r'\clearchars', r'\clearbackground']:
+							# print(s)
+							events.events.append((i, s.strip('\\')))
+
 
 						else:
 							flags.append(s.strip(r'\\'))
 							if flags[-1] in ['color', 'font']:
-								flags[-1] = flags[-1] + '_' + splits[j+1]
+								flags[-1] = flags[-1] + '|' + splits[j+1]
 								skip_indices.append(j+1)
 					else:
 						t = TextPart(s, flags, default_text_color=self.default_text_color, default_font=self.default_font, font_size=self.font_size, text_size=self.text_size)

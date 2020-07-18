@@ -206,6 +206,8 @@ class Dialogue(Widget):
 				self.parent.set_chars(chars)
 			if event[1] == 'clearchars':
 				self.parent.clear_chars()
+			if event[1] == 'clearbackground':
+				self.parent.clear_background()
 				
 
 

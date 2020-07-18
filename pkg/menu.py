@@ -199,6 +199,10 @@ class Menu:
 		self.background = pg.image.load(file).copy().convert_alpha()
 		self.background = pg.transform.scale(self.background, self.SIZE)
 
+	def clear_background(self):
+		print('hello')
+		self.background = None
+
 
 	def update_widget_pos(self):
 		for widget in self.widgets:
@@ -234,7 +238,6 @@ class Menu:
 
 
 	def clear_chars(self):
-		print('hello')
 		self.char_surface = None
 
 
