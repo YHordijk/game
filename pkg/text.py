@@ -114,7 +114,7 @@ class Parser:
 		self.default_text_color = default_text_color
 		self.font_size = font_size
 
-		self.text_flags = ['newtext', 'background', 'bold', 'italics', 'underline', 'color', 'font']
+		self.text_flags = ['newtext', 'background', 'chars', 'clearchars', 'bold', 'italics', 'underline', 'color', 'font']
 		self.special_flags = ['background']
 
 		raw_text = self.load_files(files)
@@ -165,9 +165,22 @@ class Parser:
 			for j, s in enumerate(splits):
 				if not j in skip_indices:
 					if s.startswith('\\'):
+						print(s)
 						if s == r'\background':
 							events.events.append((i, 'background', splits[j+1]))
 							skip_indices.append(j+1)
+
+						elif s == r'\chars':
+							chars = splits[j+1]
+							pos = splits[j+2]
+							events.events.append((i, 'chars', chars, pos))
+								
+							skip_indices.append(j+1)
+							skip_indices.append(j+2)
+
+						elif s == r'\clearchars':
+							events.events.append((i, 'clearchars'))
+
 						else:
 							flags.append(s.strip(r'\\'))
 							if flags[-1] in ['color', 'font']:

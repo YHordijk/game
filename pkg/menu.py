@@ -6,6 +6,7 @@ import pkg.transition_anims as tr_anim
 import copy, math, os
 
 
+data_dir = os.path.join(os.getcwd(), 'data\\')
 
 
 
@@ -76,6 +77,10 @@ def mainloop(SIZE=(1280,720), FPS=120):
 			m.draw_surface.blit(m.background, (0,0))
 		else:
 			m.draw_surface.fill(m.bkgr_color)
+
+		if m.char_surface is not None:
+			m.draw_surface.blit(m.char_surface, (0,0))
+
 		m.update(mouse_event=list(filter(lambda x: x.type == pg.MOUSEBUTTONDOWN, events)))
 		s.update(m)
 
@@ -94,6 +99,8 @@ class Menu:
 		self.menu_offset = np.array([0,0])
 
 		font = pg.font.match_font('roman')
+
+		self.char_surface = None
 
 
 
@@ -208,6 +215,29 @@ class Menu:
 				if widget.updatable:
 					widget.update(*args, **kwargs)
 				widget.draw(draw_surface)
+
+
+	def set_chars(self, chars):
+		if len(chars[0]) == 0:
+			self.char_surface = None
+			return
+
+		char_surface = pg.Surface(self.SIZE)
+		char_surface.fill((120,0,0))
+		char_surface.set_colorkey((120,0,0))
+
+		for char, pos in zip(*chars):
+			char_im = pg.image.load(rf'{data_dir}\images\characters\{char}.png')
+			char_surface.blit(char_im, (pos*self.SIZE[0], 200))
+
+		self.char_surface = char_surface
+
+
+	def clear_chars(self):
+		print('hello')
+		self.char_surface = None
+
+
 
 
 

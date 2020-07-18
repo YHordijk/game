@@ -1,6 +1,10 @@
 \newtext{Person A}
+\chars{angry_boy_1, happy_boy_1}{0.25, 0.75}
 \background{castle_hall}
-Hello, this is Person A speaking! This is some test dialogue for the engine. \bold{This is some bold text.} \italics{This is some italics text.} \underline{This is some underlined text!} \bold{\italics{This text is bold AND italics!}} \color{red}{This text will be red!!} \color{(0,2,4)}{This text will have the color (0,2,4)}
+Hello, this is Person A speaking! This is some test dialogue for the engine. \bold{This is some bold text.} 
+\italics{This is some italics text.} \underline{This is some underlined text!} 
+\bold{\italics{This text is bold AND italics!}} \color{red}{This text will be red!!} 
+\color{(0,2,4)}{This text will have the color (0,2,4)}
 
 
 \newtext{Person B}
@@ -8,4 +12,5 @@ Hello, this is Person A speaking! This is some test dialogue for the engine. \bo
 I am Person B as you can see on top of the text-box.
 
 \newtext{Person C}
+\clearchars{}
 I am Person C as you can see on top of the text-box.

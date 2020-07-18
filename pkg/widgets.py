@@ -150,34 +150,6 @@ class Button(Label):
 		
 
 class Dialogue(Widget):
-	# def __init__(self, text_file=None, text_margin=(20,20), alpha=120, font=None, font_size=None, font_colour=None, justify_x='left', justify_y='top', *args, **kwargs):
-	# 	super().__init__(*args, **kwargs)
-
-	# 	if font_size is not None: self.font_size = font_size
-	# 	elif font_size is None and font is not None: self.font_size = max(self.rect.size[1], 12)
-
-	# 	self.font = pg.font.Font(font, self.font_size)
-
-	# 	self.alpha = alpha
-			
-	# 	self.text_file = text_file
-	# 	self.load_text()
-
-	# 	self.text_margin = np.asarray(text_margin)
-
-	# 	self.text_index = 0
-
-	# 	if font_colour is not None: self.font_colour = font_colour
-	# 	else: self.font_colour = (0,0,0)
-
-	# 	self.justify_x = justify_x
-	# 	self.justify_y = justify_y
-
-	# 	self.updatable = True
-
-
-	# 	self.update_draw_surface()
-
 	def __init__(self, text_files=None, text_margin=(20,20), alpha=120, font=None, font_size=None, speaker_color=None, default_text_color=(0,0,0), justify_x='left', justify_y='top', *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
@@ -187,10 +159,7 @@ class Dialogue(Widget):
 		self.font = pg.font.Font(font, self.font_size)
 
 		self.alpha = alpha
-			
-		# self.text_file = text_file
-		# self.load_text()
-
+		
 		self.text_margin = np.asarray(text_margin)
 		self.text_pos = [40,40]
 		self.text_index = 0
@@ -203,65 +172,13 @@ class Dialogue(Widget):
 
 		self.updatable = True
 
+		self.chars = []
+
 
 		self.text_list, self.events = txt.Parser().get_text(text_files, text_size=self.size - self.text_margin - self.text_pos, default_text_color=default_text_color)
 
 		self.update_draw_surface()
 
-
-	def load_text(self):
-		with open(self.text_file, 'r') as f:
-			text = f.readlines()
-			text = [t.strip('\n') for t in text]
-
-		lines = []
-		speakers = []
-		for line in text:
-			i = line.find(':')
-			lines.append(line[i+1:])
-			speakers.append(line[:i])
-
-
-		self.lines = lines
-		self.speakers = speakers
-
-
-	# def update_draw_surface(self):
-	# 	self.draw_surface = pg.surface.Surface(self.rect.size, pg.SRCALPHA)
-	# 	self.draw_surface.fill((*self.colour,self.alpha))
-
-	# 	# if hasattr(self, 'polygon'):
-	# 	# 	pg.draw.polygon(self.draw_surface, (*self.colour,self.alpha), self.polygon.verteces.tolist())
-	# 	# else:
-	# 	# 	pg.draw.rect(self.draw_surface, (*self.colour,self.alpha), ((0,0), self.rect.size))
-
-
-	# 	speaker = self.font.render(self.speakers[self.text_index], True, self.font_colour)
-	# 	line = self.font.render(self.lines[self.text_index], True, self.font_colour)
-
-	# 	text_pos = [0,0]
-
-	# 	if self.justify_x == 'left':
-	# 		text_pos[0] = 0
-
-	# 	if self.justify_x == 'center':
-	# 		text_pos[0] = (self.rect.size[0] - line.get_size()[0])//2
-
-	# 	if self.justify_x == 'right':
-	# 		text_pos[0] = (self.rect.size[0] - line.get_size()[0])
-
-	# 	if self.justify_y == 'top':
-	# 		text_pos[1] = 0
-
-	# 	if self.justify_y == 'center':
-	# 		text_pos[1] = (self.rect.size[1] - line.get_size()[1])//2
-
-	# 	if self.justify_y == 'bottom':
-	# 		text_pos[1] = (self.rect.size[1] - line.get_size()[1])
-
-
-	# 	self.draw_surface.blit(line, text_pos + self.text_margin + np.array([40,40]))
-	# 	self.draw_surface.blit(speaker, self.text_margin)
 
 
 	def update_draw_surface(self):
@@ -281,8 +198,15 @@ class Dialogue(Widget):
 	def handle_events(self, index):
 		events = self.get_events_at_index(index)
 		for event in events:
+			print(event[1])
 			if event[1] == 'background':
 				self.parent.set_background(rf'{data_dir}\images\background\{event[2]}.png')
+			if event[1] == 'chars':
+				chars = [e.strip() for e in event[2].split(',')], [float(e.strip()) for e in event[3].split(',')]
+				self.parent.set_chars(chars)
+			if event[1] == 'clearchars':
+				self.parent.clear_chars()
+				
 
 
 	def update(self, mouse_event):
