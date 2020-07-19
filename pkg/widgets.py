@@ -191,14 +191,12 @@ class Dialogue(Widget):
 		self.draw_surface.blit(speaker, self.text_margin)
 
 
-	def get_events_at_index(self, index):
-		return filter(lambda x: x[0] == index, self.events.events)
+	
 
 
 	def handle_events(self, index):
-		events = self.get_events_at_index(index)
+		events = self.events.get_events_at_index(index)
 		for event in events:
-			print(event[1])
 			if event[1] == 'background':
 				self.parent.set_background(rf'{data_dir}\images\background\{event[2]}.png')
 			if event[1] == 'chars':

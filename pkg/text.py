@@ -8,7 +8,7 @@ pg.init()
 
 #construct color dictionary
 color_path = os.getcwd() + r'/data/resources/colors.csv'
-# color_path = r"D:\Users\Yuman\Desktop\Programmeren\Python\PyGame\game\data\resources\colors.csv"
+color_path = r"D:\Users\Yuman\Desktop\Programmeren\Python\PyGame\game\data\resources\colors.csv"
 color_dict = {}
 with open(color_path, 'r') as f:
 	for color in f.readlines():
@@ -53,6 +53,12 @@ class Events:
 	def __init__(self, events=[]):
 		#events is dictionary with key text index and value event: bkgr change, transition, chars
 		self.events = events
+
+	def get_events_at_index(self, index):
+		return filter(lambda x: x[0] == index, self.events)
+
+	def add_event(self, event, index):
+		self.events.append((index, *event))
 
 
 
@@ -108,6 +114,12 @@ class TextPart:
 
 
 class Parser:
+	def find_flags(self, string):
+		pattern = r'\\[^. {}]+(?:\{[^}]*\})*'
+		flags = re.finditer(pattern, string)
+		return list(flags)
+
+
 	# @staticmethod
 	def get_text(self, files, text_size=(1280,200), default_font='mono', font_size=30, default_text_color=(0,0,0)):
 		self.files = files
@@ -116,89 +128,141 @@ class Parser:
 		self.default_text_color = default_text_color
 		self.font_size = font_size
 
-		self.text_flags = ['newtext', 'background', 'clearbackground', 'chars', 'clearchars', 'bold', 'italics', 'underline', 'color', 'font']
 		# self.special_flags = ['background']
 
-		raw_text = self.load_files(files)
-		text_list = self.parse_text(raw_text)
+		# raw_text = self.load_files(files)
+		text_list = self.parse_text(files[0])
 		
 		return text_list
 
 
-	def load_files(self, files):
-		text_list = []
-		for file in files:
-			with open(file, 'r') as f:
-				lines = f.readlines()
-				lines = [l.rstrip() for l in lines]
-				lines = ' '.join(lines)
-				text = lines.split(r'\newtext')
-				text = [(r'\newtext' + t).strip() for t in text if len(t) > 0]
-				text_list.append(text)
+	def parse_text(self, file):
+		text_flags = ['bold', 'italics', 'underline', 'color', 'font']
+		event_flags = ['background', 'clearbackground', 'chars', 'clearchars']
 
-		return text
-
-
-	def parse_text(self, raw_text):
-		events = Events()
-		text_list = []
-		for i, text in enumerate(raw_text):
-			# print(text)
+		#load text and join all of the lines
+		with open(file, 'r') as f:
+			lines = f.readlines()
+			lines = [l.rstrip() for l in lines]
+			raw_text = ' '.join(lines)
 			
-			#split on \, { and }
-			splits = re.split(r'\\|{|}', text)
-			splits = ['\\' + s if s in self.text_flags else s for s in splits]
-			splits = [s for s in splits if len(s.strip()) > 0]
+		#find the flags
+		flags = self.find_flags(raw_text)
 
 
-			#get speaker
-			speaker_index = splits.index(r'\newtext') + 1
-			speaker = splits[speaker_index]
-			#and remove from splits
-			del(splits[speaker_index])
-			del(splits[speaker_index - 1])
 
-			text_obj = Text(speaker=speaker, text_size=self.text_size)
+		def get_next_newtext(pos):
+			for flag in filter(lambda x: x.group().startswith(r'\newtext'), flags):
+				if pos < flag.span()[0]: return flag.span()[0]
+			return len(raw_text)
+		
+		events = Events()
+		text_index = 0
+		#handle events first
+		for flag in flags:
+			d = re.split(r'{', flag.group())
+			d = [x.strip('}').strip('\\') for x in d]
+
+			if d[0] == 'newtext':
+				text_index += 1
+			if d[0] in event_flags:
+				events.add_event(d, text_index)
 
 
-			#get flags and text from splits
-			flags = []
-			skip_indices = []
-			for j, s in enumerate(splits):
-				if not j in skip_indices:
-					if s.startswith('\\'):
-						# print(s)
-						if s == r'\background':
-							events.events.append((i, 'background', splits[j+1]))
-							skip_indices.append(j+1)
+		#gather text parts
+		text_list = []
+		for flag in flags:
+			d = re.split(r'{', flag.group())
+			d = [x.strip('}').strip('\\') for x in d]
 
-						elif s == r'\chars':
-							chars = splits[j+1]
-							pos = splits[j+2]
-							events.events.append((i, 'chars', chars, pos))
+			if d[0] == 'newtext':
+				text_list.append(Text(speaker=d[1]))
+				text_start_index = flag.span()[0]
+				text_end_index = get_next_newtext(text_start_index)
+
+				print(text_start_index, text_end_index)
+
+
+
+		
+
+
+
+
+	# def load_files(self, files):
+	# 	text_list = []
+	# 	for file in files:
+	# 		with open(file, 'r') as f:
+	# 			lines = f.readlines()
+	# 			lines = [l.rstrip() for l in lines]
+	# 			lines = ' '.join(lines)
+	# 			text = lines.split(r'\newtext')
+	# 			text = [(r'\newtext' + t).strip() for t in text if len(t) > 0]
+	# 			text_list.append(text)
+
+	# 	return text
+
+
+	# def parse_text(self, raw_text):
+	# 	events = Events()
+	# 	text_list = []
+	# 	for i, text in enumerate(raw_text):
+	# 		# print(text)
+			
+	# 		#split on \, { and }
+	# 		splits = re.split(r'\\|{|}', text)
+	# 		splits = ['\\' + s if s in self.text_flags else s for s in splits]
+	# 		splits = [s for s in splits if len(s.strip()) > 0]
+
+
+	# 		#get speaker
+	# 		speaker_index = splits.index(r'\newtext') + 1
+	# 		speaker = splits[speaker_index]
+	# 		#and remove from splits
+	# 		del(splits[speaker_index])
+	# 		del(splits[speaker_index - 1])
+
+	# 		text_obj = Text(speaker=speaker, text_size=self.text_size)
+
+
+	# 		#get flags and text from splits
+	# 		flags = []
+	# 		skip_indices = []
+	# 		for j, s in enumerate(splits):
+	# 			if not j in skip_indices:
+	# 				if s.startswith('\\'):
+	# 					# print(s)
+	# 					if s == r'\background':
+	# 						events.events.append((i, 'background', splits[j+1]))
+	# 						skip_indices.append(j+1)
+
+	# 					elif s == r'\chars':
+	# 						chars = splits[j+1]
+	# 						pos = splits[j+2]
+	# 						events.events.append((i, 'chars', chars, pos))
 								
-							skip_indices.append(j+1)
-							skip_indices.append(j+2)
+	# 						skip_indices.append(j+1)
+	# 						skip_indices.append(j+2)
 
-						elif s in [r'\clearchars', r'\clearbackground']:
-							# print(s)
-							events.events.append((i, s.strip('\\')))
+	# 					elif s in [r'\clearchars', r'\clearbackground']:
+	# 						# print(s)
+	# 						events.events.append((i, s.strip('\\')))
 
 
-						else:
-							flags.append(s.strip(r'\\'))
-							if flags[-1] in ['color', 'font']:
-								flags[-1] = flags[-1] + '|' + splits[j+1]
-								skip_indices.append(j+1)
-					else:
-						t = TextPart(s, flags, default_text_color=self.default_text_color, default_font=self.default_font, font_size=self.font_size, text_size=self.text_size)
-						text_obj.text_parts.append(t)
-						flags = []
+	# 					else:
+	# 						flags.append(s.strip(r'\\'))
+	# 						if flags[-1] in ['color', 'font']:
+	# 							flags[-1] = flags[-1] + '|' + splits[j+1]
+	# 							skip_indices.append(j+1)
+	# 				else:
+	# 					t = TextPart(s, flags, default_text_color=self.default_text_color, default_font=self.default_font, font_size=self.font_size, text_size=self.text_size)
+	# 					text_obj.text_parts.append(t)
+	# 					flags = []
 
-			text_list.append(text_obj)
+	# 		text_list.append(text_obj)
 
-		[t.get_text_surf() for t in text_list]
-		return text_list, events
+	# 	[t.get_text_surf() for t in text_list]
+	# 	return text_list, events
 
 
 
@@ -207,4 +271,4 @@ class Parser:
 
 if __name__ == '__main__':
 	t = Parser().get_text([r"D:\Users\Yuman\Desktop\Programmeren\Python\PyGame\game\data\dialogue\test.txt"])
-	[print(x.text_parts) for x in t]
+	# [print(x.text_parts) for x in t]

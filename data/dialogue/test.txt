@@ -1,6 +1,6 @@
 \newtext{Demo}
-\clearbackground{}
-\clearchars{}
+\clearbackground
+\clearchars
 This is a small demo on the text engine! We can add text to our text box and also add a speaker. This speaker is called Demo and you can find him on top of the text box.
 
 \newtext{Demo}
@@ -18,7 +18,7 @@ Much better! We are in the background called castle_hall now. We can add backgro
 We are now in the garden! 
 
 \newtext{Demo}
-\clearbackground{}
+\clearbackground
 We are now back in the void. Let's return to the hall.
 
 \newtext{Demo}
@@ -34,7 +34,7 @@ Here is happy_boy_1! We can find his image file in data/images/characters. We ca
 Did happy_boy_1 just move? We can adjust the position of our character on the horizontal of our scene. Right now he is at 0.2, which means he is 20% from the left side of the screen.
 
 \newtext{Demo}
-\chars{happy_boy_1}{0.5}
+\chars{happy_boy_1, happy_boy_2}{0.5, 0.6}
 He is now back at positition 0.5. Positions are between 0 and 1. If you choose position outside of [0,1] he may disappear off screen!
 
 \newtext{happy_boy_1}
