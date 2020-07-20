@@ -9,6 +9,7 @@ pg.init()
 #construct color dictionary
 color_path = os.getcwd() + r'/data/resources/colors.csv'
 color_path = r"D:\Users\Yuman\Desktop\Programmeren\Python\PyGame\game\data\resources\colors.csv"
+color_path = r"C:\Users\Yuman Hordijk\Desktop\Scripts\game\data\resources\colors.csv"
 color_dict = {}
 with open(color_path, 'r') as f:
 	for color in f.readlines():
@@ -114,10 +115,7 @@ class TextPart:
 
 
 class Parser:
-	def find_flags(self, string):
-		pattern = r'\\[^. {}]+(?:\{[^}]*\})*'
-		flags = re.finditer(pattern, string)
-		return list(flags)
+	
 
 
 	# @staticmethod
@@ -137,50 +135,87 @@ class Parser:
 
 
 	def parse_text(self, file):
-		text_flags = ['bold', 'italics', 'underline', 'color', 'font']
-		event_flags = ['background', 'clearbackground', 'chars', 'clearchars']
+		text_flags = ['\\bold', '\\italics', '\\underline', '\\color', '\\font']
+		event_flags = ['\\background', '\\clearbackground', '\\chars', '\\clearchars']
 
 		#load text and join all of the lines
 		with open(file, 'r') as f:
 			lines = f.readlines()
 			lines = [l.rstrip() for l in lines]
 			raw_text = ' '.join(lines)
-			
-		#find the flags
-		flags = self.find_flags(raw_text)
 
+
+		#find the flags
+		pattern = r'\\[^. {}]+(?:\{[^}]*\})*'
+		flags = list(re.finditer(pattern, raw_text))
 
 
 		def get_next_newtext(pos):
 			for flag in filter(lambda x: x.group().startswith(r'\newtext'), flags):
 				if pos < flag.span()[0]: return flag.span()[0]
 			return len(raw_text)
+
+
+
+		#find first newtext flags:
+		newtext_instances = list(re.finditer(r'\\newtext', raw_text))
+		newtext_indices = [x.span()[0] for x in newtext_instances]
+
+		#cut text into parts
+		text_parts = []
+		for i in newtext_indices:
+			text_parts.append(raw_text[i:get_next_newtext(i)])
+
+		text_parts_flags = []
+		for p in text_parts:
+			text_parts_flags.append(list(re.finditer(pattern, p)))
+		# [print(i) for i in text_parts_flags]
+
+
+
+
 		
 		events = Events()
-		text_index = 0
-		#handle events first
-		for flag in flags:
-			d = re.split(r'{', flag.group())
-			d = [x.strip('}').strip('\\') for x in d]
+		for i, p in enumerate(text_parts):
+			for flag in text_parts_flags[i]:
+				d = re.split(r'{', flag.group())
+				d = [x.strip('}') for x in d]
+				
+				if d[0] == 'newtext':
+					speaker = d[1]
 
-			if d[0] == 'newtext':
-				text_index += 1
-			if d[0] in event_flags:
-				events.add_event(d, text_index)
+				if d[0] in event_flags:
+					events.add_event(d, i)
+
+				if d[0] in text_flags:
+					if any(map(lambda x: x in text_flags, d[1:])):
+						print(d)
 
 
-		#gather text parts
-		text_list = []
-		for flag in flags:
-			d = re.split(r'{', flag.group())
-			d = [x.strip('}').strip('\\') for x in d]
 
-			if d[0] == 'newtext':
-				text_list.append(Text(speaker=d[1]))
-				text_start_index = flag.span()[0]
-				text_end_index = get_next_newtext(text_start_index)
+		# text_index = 0
+		# #handle events first
+		# for flag in flags:
+		# 	d = re.split(r'{', flag.group())
+		# 	d = [x.strip('}').strip('\\') for x in d]
 
-				print(text_start_index, text_end_index)
+		# 	if d[0] == 'newtext':
+		# 		text_index += 1
+		# 	if d[0] in event_flags:
+		# 		events.add_event(d, text_index)
+
+
+		# #gather text parts
+		# text_list = []
+		# for flag in flags:
+		# 	d = re.split(r'{', flag.group())
+		# 	d = [x.strip('}').strip('\\') for x in d]
+
+		# 	if d[0] == 'newtext':
+		# 		text_list.append(Text(speaker=d[1]))
+		# 		text_start_index = flag.span()[0]
+		# 		text_end_index = get_next_newtext(text_start_index)
+
 
 
 
@@ -270,5 +305,6 @@ class Parser:
 
 
 if __name__ == '__main__':
-	t = Parser().get_text([r"D:\Users\Yuman\Desktop\Programmeren\Python\PyGame\game\data\dialogue\test.txt"])
+	# t = Parser().get_text([r"D:\Users\Yuman\Desktop\Programmeren\Python\PyGame\game\data\dialogue\test.txt"])
+	t = Parser().get_text([r"C:\Users\Yuman Hordijk\Desktop\Scripts\game\data\dialogue\test.txt"])
 	# [print(x.text_parts) for x in t]
