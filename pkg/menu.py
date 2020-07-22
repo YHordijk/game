@@ -3,6 +3,7 @@ import numpy as np
 import pkg.screen as screen
 import pkg.widgets as widg
 import pkg.transition_anims as tr_anim
+import pkg.text as txt
 import copy, math, os
 
 
@@ -65,7 +66,7 @@ def mainloop(SIZE=(1280,720), FPS=120):
 		updt += 1
 
 		# print(1/dT)
-
+		txt.color_key = (0,0,updt%255)
 		try: 
 			active_transition_animation.update(time, dT)
 			if time - active_transition_animation.start_time > active_transition_animation.duration:
@@ -98,7 +99,9 @@ class Menu:
 		self.background = background
 		self.menu_offset = np.array([0,0])
 
-		font = pg.font.match_font('roman')
+		# font = pg.font.match_font('roman')
+		# font = pg.font.match_font('courier')
+		font = rf'{data_dir}/resources/fonts/Osaka-Mono.ttf'
 
 		self.char_surface = None
 
@@ -183,16 +186,16 @@ class Menu:
 
 		####====== MAIN GAME ======####
 		offset = np.asarray((0, SIZE[1]))
-		size = (self.SIZE[0], 200)
-		pos = (0, self.SIZE[1]-200)
+		size = (self.SIZE[0], 220)
+		pos = (0, self.SIZE[1]-size[1])
 		self.widgets.append( widg.Dialogue(parent=self,
 										   pos=np.asarray(pos)+offset+self.menu_offset,
 										   size=size,
 										   font=font, 
 										   font_size=30, 
 										   alpha = 200,
-										   default_text_color=(0,0,0),
-										   text_files=[dialogue_dir + 'test.txt']))
+										   font_color=(0,0,0),
+										   text_file=dialogue_dir + 'test.txt'))
 
 
 	def set_background(self, file):
@@ -200,7 +203,6 @@ class Menu:
 		self.background = pg.transform.scale(self.background, self.SIZE)
 
 	def clear_background(self):
-		print('hello')
 		self.background = None
 
 
@@ -229,10 +231,13 @@ class Menu:
 		char_surface = pg.Surface(self.SIZE)
 		char_surface.fill((120,0,0))
 		char_surface.set_colorkey((120,0,0))
-
+		print(chars)
 		for char, pos in zip(*chars):
-			char_im = pg.image.load(rf'{data_dir}\images\characters\{char}.png')
-			char_surface.blit(char_im, (pos*self.SIZE[0], 200))
+			try:
+				char_im = pg.image.load(rf'{data_dir}\images\characters\{char}.png')
+				char_surface.blit(char_im, (pos*self.SIZE[0] - char_im.get_width()//2, 200))
+			except:
+				print('Could not find image ' + rf'{data_dir}\images\characters\{char}.png')
 
 		self.char_surface = char_surface
 

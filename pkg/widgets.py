@@ -9,7 +9,7 @@ data_dir = os.path.join(os.getcwd(), 'data\\')
 
 
 class Widget:
-	def __init__(self, parent=None, pos=None, polygon=None, size=None, colour=None, img=None):
+	def __init__(self, parent=None, pos=None, polygon=None, size=None, colour=None, img=None, font=None, font_size=None, font_color=(0,0,0)):
 		self.parent = parent
 		self.pos = np.asarray(pos)
 		self.original_pos = copy.copy(self.pos)
@@ -23,6 +23,12 @@ class Widget:
 
 		if colour is None and img is None:
 			self.colour = (255,255,255)
+
+		if font_size is not None: self.font_size = font_size
+		elif font_size is None and font is not None: self.font_size = max(self.rect.size[1], 12)
+
+		self.font = pg.font.Font(font, self.font_size)
+		self.font_color = font_color if font_color is not None else (255,255,255)
 
 
 	@property
@@ -47,20 +53,12 @@ class Widget:
 
 
 class Label(Widget):
-	def __init__(self, text=None, text_margin=(0,0), font=None, font_size=None, font_colour=None, justify_x='left', justify_y='top', *args, **kwargs):
+	def __init__(self, text=None, text_margin=(0,0), justify_x='left', justify_y='top', *args, **kwargs):
 		super().__init__(*args, **kwargs)
-
-		if font_size is not None: self.font_size = font_size
-		elif font_size is None and font is not None: self.font_size = max(self.rect.size[1], 12)
-
-		self.font = pg.font.Font(font, self.font_size)
 		
 		self.text = text
 
 		self.text_margin = np.asarray(text_margin)
-
-		if font_colour is not None: self.font_colour = font_colour
-		else: self.font_colour = (0,0,0)
 
 		self.justify_x = justify_x
 		self.justify_y = justify_y
@@ -79,7 +77,7 @@ class Label(Widget):
 			pg.draw.rect(self.draw_surface, self.colour, ((0,0), self.rect.size))
 
 		if not self.text is None:
-			text = self.font.render(self.text, True, self.font_colour)
+			text = self.font.render(self.text, True, self.font_color)
 
 			text_pos = [0,0]
 
@@ -150,18 +148,14 @@ class Button(Label):
 		
 
 class Dialogue(Widget):
-	def __init__(self, text_files=None, text_margin=(20,20), alpha=120, font=None, font_size=None, speaker_color=None, default_text_color=(0,0,0), justify_x='left', justify_y='top', *args, **kwargs):
+	def __init__(self, text_file=None, text_margin=(20,20), alpha=120, speaker_color=None, justify_x='left', justify_y='top', *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
-		if font_size is not None: self.font_size = font_size
-		elif font_size is None and font is not None: self.font_size = max(self.rect.size[1], 12)
-
-		self.font = pg.font.Font(font, self.font_size)
-
+		
 		self.alpha = alpha
 		
 		self.text_margin = np.asarray(text_margin)
-		self.text_pos = [40,40]
+		self.text_pos = [40,60]
 		self.text_index = 0
 
 		if speaker_color is not None: self.speaker_color = speaker_color
@@ -175,43 +169,42 @@ class Dialogue(Widget):
 		self.chars = []
 
 
-		self.text_list, self.events = txt.Parser().get_text(text_files, text_size=self.size - self.text_margin - self.text_pos, default_text_color=default_text_color)
+		self.text_list, self.events = txt.Parser().get_text(text_file, text_size=self.size - self.text_margin - self.text_pos, font_color=self.font_color)
 
 		self.update_draw_surface()
-
 
 
 	def update_draw_surface(self):
 		self.draw_surface = pg.surface.Surface(self.rect.size, pg.SRCALPHA)
 		self.draw_surface.fill((*self.colour, self.alpha))
-		
-		self.draw_surface.blit(self.text_list[self.text_index].text_surf, self.text_pos + self.text_margin)
-
+		self.draw_surface.blit(self.text_list[self.text_index].text_surf, self.text_pos)
 		speaker = self.font.render(self.text_list[self.text_index].speaker, True, self.speaker_color)
 		self.draw_surface.blit(speaker, self.text_margin)
-
-
-	
 
 
 	def handle_events(self, index):
 		events = self.events.get_events_at_index(index)
 		for event in events:
-			if event[1] == 'background':
+			if event[1] == '\\background':
 				self.parent.set_background(rf'{data_dir}\images\background\{event[2]}.png')
-			if event[1] == 'chars':
-				chars = [e.strip() for e in event[2].split(',')], [float(e.strip()) for e in event[3].split(',')]
+			if event[1] == '\\chars':
+				chars = [[],[]]
+				for char in event[2].split(','):
+					name, pos = char.split(':')
+					chars[0].append(name.strip())
+					chars[1].append(float(pos.strip()))
 				self.parent.set_chars(chars)
-			if event[1] == 'clearchars':
+			if event[1] == '\\clearchars':
 				self.parent.clear_chars()
-			if event[1] == 'clearbackground':
+			if event[1] == '\\clearbackground':
 				self.parent.clear_background()
+			if event[1] == '\\goto':
+				self.text_index = {t.label:i for i, t in enumerate(self.text_list)}[event[2]]
+				self.handle_events(self.text_index)
 				
-
 
 	def update(self, mouse_event):
 		collides = self.collidepoint(pg.mouse.get_pos())
-
 		if collides:
 			if len(mouse_event) >= 1:
 				but = mouse_event[0].button
@@ -219,8 +212,15 @@ class Dialogue(Widget):
 					self.text_index = (self.text_index + 1)%len(self.text_list)
 					self.handle_events(self.text_index)
 					self.update_draw_surface()
+					# [print(x) for x in self.text_list[self.text_index].text_parts]
 
 
 	def draw(self, surf):
 		surf.set_colorkey(self.colour_key)
 		return surf.blit(self.draw_surface, self.pos)
+
+
+
+class ChoiceDialogue(Widget):
+	def __init__(*arsg, **kwargs):
+		super().__init__(*args, **kwargs)

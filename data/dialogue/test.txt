@@ -1,4 +1,4 @@
-\newtext{Demo}
+\newtext[start]{Start}
 \clearbackground
 \clearchars
 This is a small demo on the text engine! We can add text to our text box and also add a speaker. This speaker is called Demo and you can find him on top of the text box.
@@ -26,37 +26,44 @@ We are now back in the void. Let's return to the hall.
 It is a bit lonely here, isn't it? How about we add some characters to our scene?
 
 \newtext{Demo}
-\chars{happy_boy_1}{0.5}
+\chars{happy_boy_1: 0.5}
 Here is happy_boy_1! We can find his image file in data/images/characters. We can also add new images here and they can then be used in the game.
 
 \newtext{Demo}
-\chars{happy_boy_1}{0.2}
+\chars{happy_boy_1:0.2}
 Did happy_boy_1 just move? We can adjust the position of our character on the horizontal of our scene. Right now he is at 0.2, which means he is 20% from the left side of the screen.
 
 \newtext{Demo}
-\chars{happy_boy_1, happy_boy_2}{0.5, 0.6}
+\chars{happy_boy_1:0.5, angry_boy_1:0.6}
 He is now back at positition 0.5. Positions are between 0 and 1. If you choose position outside of [0,1] he may disappear off screen!
 
-\newtext{happy_boy_1}
+\newtext[happy_boy]{happy_boy_1}
 Hi! I am happy_boy_1, I am now the speaker. I have a number of options for spicing up the text.
 
 \newtext{happy_boy_1}
-For example, \bold{this text will appear as bold}. \italics{This text is in italics}! We can also put a line under our \underline{text}.
+For example, \s[b]{this text will appear as bold}. \s[i]{This text is in italics}! We can also put a line under our \s[u]{text}.
 
 \newtext{happy_boy_1}
-We can also combine these text effects! \bold{\italics{This text is both bold AND italics!}} We can also change the color of our text! \color{red}{this text is red}, \color{blue}{this text is blue}, \color{blanched_almond}{this color is called Blanched almond, whatever that means}!
+We can also combine these text effects! \s[bi]{This text is both bold AND italics!} We can also change the color of our text! \s[c(red)]{this text is red}, \s[c(blue)]{this text is blue}, \s[c(blanched_almond)]{this color is called Blanched almond, whatever that means}!
 
 \newtext{happy_boy_1}
 A large number of colors are available for you, take a look in data/resources/colors.csv. This csv file contains over 900 different colors. 
 
 \newtext{happy_boy_1}
-It is also possible to use your own colors if you think thats easier. For example: \bold{\color{140, 250, 80}{This text has the color (140, 250, 80).}} We use RGB colors from 0 to 255 to define our colors!
+It is also possible to use your own colors if you think thats easier. For example: \s[c(140,250,80)b]{This text has the color (140,250,80).} We use RGB colors from 0 to 255 to define our colors!
 
 \newtext{happy_boy_1}
-For example \bold{\color{255, 0, 0}{(255,0,0) is red}}, \bold{\color{0,255,0}{(0,255,0) is green}} and \bold{\color{0,0,255}{(0,0,255) is blue!}}
+For example \s[c(255,0,0)b]{(255,0,0) is red}, \s[c(0,255,0)b]{(0,255,0) is green} and \s[c(0,0,255)b]{(0,0,255) is blue!}
 
 \newtext{happy_boy_1}
 If you want a new feature to be added or if you're not sure how something works, just ask Yuman!
 
 \newtext{happy_boy_1}
 So far, the to-do list includes adding support for choices, input (so the user can type stuff too, for example the name for the mc) and animations. Of course the world map also needs to be made, but I have started on doing that already
+
+\newtext{jumpy}
+We can jump to a different part of the text using the \\goto{label} command, for example we will now jump to the first appearance of happy_boy_1!
+
+\newtext{jumpy}
+\goto{start}
+this text will therefore not be shown

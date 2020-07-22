@@ -1,0 +1,5 @@
+\newtext{Demo}{start}
+This text is not styled, \[b, i, u]this text is styled.\[] This text is not styled either!
+
+\newtext{Demo2}
+This text will be coloured \[b, c(red)]This text is bold and red
