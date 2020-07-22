@@ -123,12 +123,13 @@ class TextPart:
 
 
 class Parser:
-	def get_text(self, file, text_size=(1280,200), default_font='mono', font_size=30, font_color=(0,0,0)):
+	def get_text(self, parent, file, text_size=(1280,200), default_font='mono', font_size=30, font_color=(0,0,0)):
 		self.file = file
 		self.text_size = text_size
 		self.default_font = default_font
 		self.font_color = font_color
 		self.font_size = font_size
+		self.parent = parent
 
 		text_list = self.parse_text(file)
 		
@@ -137,13 +138,28 @@ class Parser:
 
 	def parse_text(self, file):
 		text_flags = ['\\s']
-		event_flags = ['\\background', '\\clearbackground', '\\chars', '\\clearchars', '\\goto']
+		event_flags = ['\\background', '\\clearbackground', '\\chars', '\\clearchars', '\\goto', '\\choice']
 
 		#load text and join all of the lines
 		with open(file, 'r') as f:
 			lines = f.readlines()
 			lines = [l.rstrip() for l in lines]
 			raw_text = ' '.join(lines)
+
+
+		#replace text flags:
+		text_placeholders = {
+			'they': self.parent.game.player.they,
+			'them': self.parent.game.player.them,
+			'their': self.parent.game.player.their,
+			'honor': self.parent.game.player.honor,
+			'nonmarital': self.parent.game.player.nonmarital,
+		}
+
+		pattern = r'\$[^$]*\$'
+		for p in list(re.finditer(pattern, raw_text)):
+			raw_text = raw_text.replace(p.group(), text_placeholders[p.group().strip('$')])
+
 
 
 		#find the flags
@@ -198,7 +214,12 @@ class Parser:
 					d = [x.strip('}') for x in d]
 
 					if d[0] in event_flags:
-						events.add_event(d, i)
+						if d[0] == '\\goto':
+							events.add_event(d, min(i+1, len(text_parts)-1))
+							print(min(i+1, len(text_parts)))
+						else:
+							events.add_event(d, i)
+
 
 					elif d[0].startswith('\\newtext'):
 							try:

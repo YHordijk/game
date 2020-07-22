@@ -9,13 +9,13 @@ data_dir = os.path.join(os.getcwd(), 'data\\')
 
 
 class Widget:
-	def __init__(self, parent=None, pos=None, polygon=None, size=None, colour=None, img=None, font=None, font_size=None, font_color=(0,0,0)):
+	def __init__(self, parent=None, pos=None, polygon=None, size=None, colour=None, img=None, font=None, font_size=None, font_color=(0,0,0), justify_x='left', justify_y='top'):
 		self.parent = parent
 		self.pos = np.asarray(pos)
 		self.original_pos = copy.copy(self.pos)
 		self.size = size
 		self.colour = colour
-		self.colour_key = (255,0,123)
+		self.colour_key = (255,255,254)
 		self.img = img
 		self.updatable = False
 		if polygon is not None:
@@ -29,6 +29,9 @@ class Widget:
 
 		self.font = pg.font.Font(font, self.font_size)
 		self.font_color = font_color if font_color is not None else (255,255,255)
+
+		self.justify_x = justify_x
+		self.justify_y = justify_y
 
 
 	@property
@@ -148,7 +151,7 @@ class Button(Label):
 		
 
 class Dialogue(Widget):
-	def __init__(self, text_file=None, text_margin=(20,20), alpha=120, speaker_color=None, justify_x='left', justify_y='top', *args, **kwargs):
+	def __init__(self, text_file=None, text_margin=(20,20), alpha=120, speaker_color=None, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
 		
@@ -161,15 +164,13 @@ class Dialogue(Widget):
 		if speaker_color is not None: self.speaker_color = speaker_color
 		else: self.speaker_color = (0,0,0)
 
-		self.justify_x = justify_x
-		self.justify_y = justify_y
 
 		self.updatable = True
 
 		self.chars = []
 
 
-		self.text_list, self.events = txt.Parser().get_text(text_file, text_size=self.size - self.text_margin - self.text_pos, font_color=self.font_color)
+		self.text_list, self.events = txt.Parser().get_text(self.parent, text_file, text_size=self.size - self.text_margin - self.text_pos, font_color=self.font_color)
 
 		self.update_draw_surface()
 
@@ -180,6 +181,12 @@ class Dialogue(Widget):
 		self.draw_surface.blit(self.text_list[self.text_index].text_surf, self.text_pos)
 		speaker = self.font.render(self.text_list[self.text_index].speaker, True, self.speaker_color)
 		self.draw_surface.blit(speaker, self.text_margin)
+
+
+	def goto(self, label):
+		self.text_index = {t.label:i for i, t in enumerate(self.text_list)}[label]
+		self.handle_events(self.text_index)
+		self.update_draw_surface()
 
 
 	def handle_events(self, index):
@@ -199,8 +206,16 @@ class Dialogue(Widget):
 			if event[1] == '\\clearbackground':
 				self.parent.clear_background()
 			if event[1] == '\\goto':
-				self.text_index = {t.label:i for i, t in enumerate(self.text_list)}[event[2]]
-				self.handle_events(self.text_index)
+				self.goto(event[2])
+			if event[1] == '\\choice':
+				choices = []
+				actions = []
+				for c in event[2].split(','):
+					d = c.split(':')
+					choices.append(d[0].strip())
+					actions.append(d[1].strip())
+
+				self.parent.set_choices(choices, actions)
 				
 
 	def update(self, mouse_event):
@@ -209,10 +224,11 @@ class Dialogue(Widget):
 			if len(mouse_event) >= 1:
 				but = mouse_event[0].button
 				if but == 1:
+
 					self.text_index = (self.text_index + 1)%len(self.text_list)
+					print(self.text_index)
 					self.handle_events(self.text_index)
 					self.update_draw_surface()
-					# [print(x) for x in self.text_list[self.text_index].text_parts]
 
 
 	def draw(self, surf):
@@ -222,5 +238,110 @@ class Dialogue(Widget):
 
 
 class ChoiceDialogue(Widget):
-	def __init__(*arsg, **kwargs):
+	def __init__(self, choices=[], actions=[], choice_spacing=10, choice_margin=30, alpha=200, *args, **kwargs):
 		super().__init__(*args, **kwargs)
+
+		self.choices = choices
+		self.actions = actions
+
+		self.choice_spacing = choice_spacing
+		self.choice_margin = choice_margin
+		self.alpha = alpha
+
+		self.choice_alpha = [alpha for _ in range(len(self.choices))]
+
+		self.updatable = True
+
+		self.parent.dialogue.updatable = False
+
+		# self.choice_rects = self.get_choice_rects()
+
+		self.update_draw_surface()
+
+
+	def update_draw_surface(self):
+		draw_surface = pg.surface.Surface(self.rect.size, pg.SRCALPHA)
+		# draw_surface.fill((*self.colour, self.alpha))
+		
+
+		text_height = self.font.get_height()
+
+		y = 0
+		for i, choice in enumerate(self.choices):
+			rect = self.choice_rects[i]
+			choice_surf = pg.surface.Surface(rect.size, pg.SRCALPHA)
+			choice_surf.fill((*self.colour, self.choice_alpha[i]))
+			text = self.font.render(choice, True, self.font_color)
+
+			text_pos = [0,0]
+			if self.justify_x == 'left':
+				text_pos[0] = 0
+			if self.justify_x == 'center':
+				text_pos[0] = (rect.size[0] - text.get_size()[0])//2
+			if self.justify_x == 'right':
+				text_pos[0] = (rect.size[0] - text.get_size()[0])
+
+			if self.justify_y == 'top':
+				text_pos[1] = 0
+			if self.justify_y == 'center':
+				text_pos[1] = (rect.size[1] - text.get_size()[1])//2
+			if self.justify_y == 'bottom':
+				text_pos[1] = (rect.size[1] - text.get_size()[1])
+
+			choice_surf.blit(text, text_pos)
+			draw_surface.blit(choice_surf, (0,y))
+
+			y += self.font.get_height() + self.choice_spacing
+
+
+		self.draw_surface = draw_surface
+
+	@property
+	def choice_rects(self):
+		rects = []
+		p = self.pos
+		y = 0
+		for i in range(len(self.choices)):
+			rects.append(pg.Rect(p[0], p[1]+y, self.size[0], self.font.get_height() + self.choice_margin))
+			y += self.font.get_height() + self.choice_spacing
+
+		return rects
+
+
+	def update(self, mouse_event):
+		mouse_pos = pg.mouse.get_pos()
+		# print(self.choice_rects[0].collidepoint(mouse_pos), self.choice_rects[0])
+		for i in range(len(self.choices)):
+			collides = self.choice_rects[i].collidepoint(mouse_pos)
+			if collides:
+				self.choice_alpha[i] = min(255, 2*self.alpha)
+				if len(mouse_event) >= 1:
+					but = mouse_event[0].button
+					if but == 1:
+						self.handle_choice_action(self.actions[i])
+						self.parent.clear_choices()
+						self.parent.dialogue.updatable = True
+						self.parent.dialogue.text_index = (self.parent.dialogue.text_index + 1)%len(self.parent.dialogue.text_list)
+						self.parent.dialogue.handle_events(self.parent.dialogue.text_index)
+						self.parent.dialogue.update_draw_surface()
+						
+			else:
+				self.choice_alpha[i] = self.alpha
+
+			self.update_draw_surface()
+
+
+	def handle_choice_action(self, action):
+		if action.startswith('set'):
+			a = action.strip('set(').strip(')')
+		elif action.startswith('goto'):
+			a = action.strip('goto(').strip(')').strip()
+			self.parent.dialogue.goto(a)
+			self.parent.dialogue.text_index -= 1
+
+
+
+	def draw(self, surf):
+		surf.set_colorkey(self.colour_key)
+		return surf.blit(self.draw_surface, self.pos)
+

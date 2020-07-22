@@ -1,5 +1,18 @@
-\newtext{Demo}{start}
-This text is not styled, \[b, i, u]this text is styled.\[] This text is not styled either!
+\newtext[start]{choice test}
+\background{castle_garden}
+Hello, this is a demonstration of choice dialogues. We can add choice dialogues using the \\choice{} command.
 
-\newtext{Demo2}
-This text will be coloured \[b, c(red)]This text is bold and red
+\newtext{choice test}
+\choice{Go back to start:goto(start), Go forward:goto(end2)}
+For example, here we have used \\choice{Go back to start:goto(start), Go forward:goto(end2)}.
+
+\newtext[end2]{choice test}
+\background{castle_hall}
+You pressed the second option, so you were sent here. If you had pressed the first option you would have been sent to the start!
+$they$
+
+\newtext{}
+
+\newtext{}
+\goto{end2}
+

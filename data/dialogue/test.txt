@@ -1,9 +1,15 @@
+\newtext{}
+\choice{Male:set(game.player.gender='male'), Female:set(game.player.gender='female')}
+What is your gender?
+
+
 \newtext[start]{Start}
 \clearbackground
 \clearchars
 This is a small demo on the text engine! We can add text to our text box and also add a speaker. This speaker is called Demo and you can find him on top of the text box.
 
 \newtext{Demo}
+\choice{1:goto(choice1), 2:goto(choice2)}
 If our text is too large to fit on one line of the text box it is automatically wrapped around. However I have not yet added support for overflowing text boxes!! So be carefull.
 
 \newtext{Demo}
@@ -30,6 +36,7 @@ It is a bit lonely here, isn't it? How about we add some characters to our scene
 Here is happy_boy_1! We can find his image file in data/images/characters. We can also add new images here and they can then be used in the game.
 
 \newtext{Demo}
+\choice{Male:set(game.player.gender='male'), Female:set(game.player.gender='female')}
 \chars{happy_boy_1:0.2}
 Did happy_boy_1 just move? We can adjust the position of our character on the horizontal of our scene. Right now he is at 0.2, which means he is 20% from the left side of the screen.
 
@@ -67,3 +74,16 @@ We can jump to a different part of the text using the \\goto{label} command, for
 \newtext{jumpy}
 \goto{start}
 this text will therefore not be shown
+
+
+\newtext[choice1]{Choice1}
+You chose to come here! This is because we used the goto action to go here.
+
+\newtext{hello}
+\goto{start}
+
+\newtext[choice2]{Choice2}
+You chose to come here! This is because we used the goto action to go here.
+
+\newtext{hello}
+\goto{start}

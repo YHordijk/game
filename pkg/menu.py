@@ -2,6 +2,7 @@ import pygame as pg
 import numpy as np
 import pkg.screen as screen
 import pkg.widgets as widg
+import pkg.game_state as game_state
 import pkg.transition_anims as tr_anim
 import pkg.text as txt
 import copy, math, os
@@ -39,8 +40,8 @@ def command_start_button(source, direction='right', duration=1, **kwargs):
 	global active_transition_animation
 	if active_transition_animation is None:
 		active_transition_animation = tr_anim.fade_out(start_time=time, menu=menu, direction=direction, duration=duration, **kwargs)
-	menu.widgets[-1].text_index = 0
-	menu.widgets[-1].handle_events(0)
+	menu.dialogue.text_index = 0
+	menu.dialogue.handle_events(0)
 
 
 def mainloop(SIZE=(1280,720), FPS=120):
@@ -65,6 +66,8 @@ def mainloop(SIZE=(1280,720), FPS=120):
 		time += dT
 		updt += 1
 
+		# print(m.dialogue.text_index)
+
 		# print(1/dT)
 		txt.color_key = (0,0,updt%255)
 		try: 
@@ -82,6 +85,8 @@ def mainloop(SIZE=(1280,720), FPS=120):
 		if m.char_surface is not None:
 			m.draw_surface.blit(m.char_surface, (0,0))
 
+		# print(m.choice)
+
 		m.update(mouse_event=list(filter(lambda x: x.type == pg.MOUSEBUTTONDOWN, events)))
 		s.update(m)
 
@@ -98,10 +103,13 @@ class Menu:
 		self.bkgr_color = bkgr_color
 		self.background = background
 		self.menu_offset = np.array([0,0])
+		self.choice = None
 
-		# font = pg.font.match_font('roman')
-		# font = pg.font.match_font('courier')
-		font = rf'{data_dir}/resources/fonts/Osaka-Mono.ttf'
+		self.game = game_state.GameState()
+
+		# self.font = pg.font.match_font('roman')
+		# self.font = pg.font.match_font('courier')
+		self.font = rf'{data_dir}/resources/fonts/Osaka-Mono.ttf'
 
 		self.char_surface = None
 
@@ -117,7 +125,7 @@ class Menu:
 		self.widgets.append( widg.Label(parent=self,
 										pos=np.asarray(pos)+offset+self.menu_offset, 
 										size=size, 
-										font=font, 
+										font=self.font, 
 										font_size=100, 
 										text='Main Menu', 
 										justify_x='center', 
@@ -129,7 +137,7 @@ class Menu:
 		self.widgets.append( widg.Button(parent=self,
 										 pos=np.asarray(pos)+offset+self.menu_offset, 
 										 size=size, 
-										 font=font, 
+										 font=self.font, 
 										 font_size=50, 
 										 text='Start', 
 										 justify_x='center', 
@@ -144,7 +152,7 @@ class Menu:
 		self.widgets.append( widg.Button(parent=self,
 										 pos=np.asarray(pos)+offset+self.menu_offset, 
 										 size=size, 
-										 font=font, 
+										 font=self.font, 
 										 font_size=50, 
 										 text='Settings', 
 										 justify_x='center', 
@@ -164,7 +172,7 @@ class Menu:
 		self.widgets.append( widg.Label(parent=self,
 										pos=np.asarray(pos)+offset+self.menu_offset, 
 										polygon=verts, 
-										font=font, 
+										font=self.font, 
 										font_size=100, 
 										text='Settings', 
 										justify_x='center', 
@@ -175,7 +183,7 @@ class Menu:
 		self.widgets.append( widg.Button(parent=self,
 										 pos=np.asarray(pos)+offset+self.menu_offset, 
 										 size=size, 
-										 font=font, 
+										 font=self.font, 
 										 font_size=50, 
 										 text='Back', 
 										 justify_x='center', 
@@ -191,11 +199,14 @@ class Menu:
 		self.widgets.append( widg.Dialogue(parent=self,
 										   pos=np.asarray(pos)+offset+self.menu_offset,
 										   size=size,
-										   font=font, 
+										   font=self.font, 
 										   font_size=30, 
 										   alpha = 200,
 										   font_color=(0,0,0),
-										   text_file=dialogue_dir + 'test.txt'))
+										   text_file=dialogue_dir + 'test2.txt'))
+
+		self.dialogue = self.widgets[-1]
+
 
 
 	def set_background(self, file):
@@ -205,24 +216,6 @@ class Menu:
 	def clear_background(self):
 		self.background = None
 
-
-	def update_widget_pos(self):
-		for widget in self.widgets:
-			widget.pos = widget.original_pos + self.menu_offset
-
-
-	def update(self, *args, **kwargs):
-		draw_surface = self.draw_surface
-		self.update_widget_pos()
-		for widget in self.widgets:
-			#draw widget if it is on screen
-			if self.screen_rect.colliderect(widget.rect):
-				#update widget if it needs updating
-				if widget.updatable:
-					widget.update(*args, **kwargs)
-				widget.draw(draw_surface)
-
-
 	def set_chars(self, chars):
 		if len(chars[0]) == 0:
 			self.char_surface = None
@@ -231,7 +224,6 @@ class Menu:
 		char_surface = pg.Surface(self.SIZE)
 		char_surface.fill((120,0,0))
 		char_surface.set_colorkey((120,0,0))
-		print(chars)
 		for char, pos in zip(*chars):
 			try:
 				char_im = pg.image.load(rf'{data_dir}\images\characters\{char}.png')
@@ -241,9 +233,54 @@ class Menu:
 
 		self.char_surface = char_surface
 
-
 	def clear_chars(self):
 		self.char_surface = None
+
+	def set_choices(self, choices, actions):
+		offset = np.asarray((0, self.SIZE[1]))
+		size = (self.SIZE[0], 220)
+		pos = (0, 220)
+		self.choice = widg.ChoiceDialogue(parent=self,
+										   choices=choices,
+										   actions=actions,
+										   pos=np.asarray(pos)+offset,
+										   size=size,
+										   font=self.font,
+										   font_size=30,
+										   alpha=150,
+										   font_color=(0,0,0),
+										   justify_x='center',
+										   justify_y='center',
+										   choice_spacing=40)
+
+		self.widgets.append(self.choice)
+
+	def clear_choices(self):
+		self.widgets.remove(self.choice)
+		self.choice = None
+
+
+	def update_widget_pos(self):
+		# print(self.menu_offset)
+		for widget in self.widgets:
+			widget.pos = widget.original_pos + self.menu_offset
+
+
+	def update(self, *args, **kwargs):
+		draw_surface = self.draw_surface
+		self.update_widget_pos()
+		for widget in self.widgets:
+			#draw widget if it is on screen
+			# try: print(self.screen_rect.colliderect(self.choice.rect), self.choice.rect)
+			# except: pass
+			if self.screen_rect.colliderect(widget.rect):
+				#update widget if it needs updating
+				if widget.updatable:
+					widget.update(*args, **kwargs)
+				widget.draw(draw_surface)
+
+
+	
 
 
 
