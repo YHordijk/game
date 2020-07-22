@@ -177,10 +177,32 @@ class Parser:
 		
 		events = Events()
 		for i, p in enumerate(text_parts):
+			flag_spans = [flag.span() for flag in text_parts_flags[i]]
+			# print(flag_spans)
+			non_flag_spans = []
+			x = 0
+			for i, s in enumerate(flag_spans):
+				if x < s[0]:
+					non_flag_spans.append((x,s[0]))
+					x = s[1] + 1
+				else:
+					x = s[1] + 1
+
+				if s[1] < len(p) and i == len(flag_spans)-1:
+					non_flag_spans.append((x,len(p)))
+
+			[print(x, p[x[0]:x[1]]) for x in flag_spans]
+			[print(x, p[x[0]:x[1]]) for x in non_flag_spans]
+			
+
+			combined_spans = list(sorted(flag_spans + non_flag_spans, key=lambda x: x[0]))
+			print(combined_spans)
+
+
 			for flag in text_parts_flags[i]:
 				d = re.split(r'{', flag.group())
 				d = [x.strip('}') for x in d]
-				
+				# print(flag.span())
 				if d[0] == 'newtext':
 					speaker = d[1]
 
@@ -189,7 +211,8 @@ class Parser:
 
 				if d[0] in text_flags:
 					if any(map(lambda x: x in text_flags, d[1:])):
-						print(d)
+						# print(d)
+						pass
 
 
 
