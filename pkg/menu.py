@@ -86,8 +86,9 @@ def mainloop(SIZE=(1280,720), FPS=120):
 			m.draw_surface.blit(m.char_surface, (0,0))
 
 		# print(m.choice)
-
-		m.update(mouse_event=list(filter(lambda x: x.type == pg.MOUSEBUTTONDOWN, events)))
+		mouse_event = list(filter(lambda x: x.type == pg.MOUSEBUTTONDOWN, events))
+		key_event = list(filter(lambda x: x.type == pg.KEYDOWN, events))
+		m.update(mouse_event=mouse_event, key_event=key_event)
 		s.update(m)
 
 
@@ -255,9 +256,35 @@ class Menu:
 
 		self.widgets.append(self.choice)
 
+
 	def clear_choices(self):
 		self.widgets.remove(self.choice)
 		self.choice = None
+
+
+	def set_input(self, var, default_input, char_limit):
+		offset = np.asarray((0, self.SIZE[1]))
+		size = (self.SIZE[0], 50)
+		pos = (0, 220)
+		self.input = widg.Input(parent=self,
+								var=var,
+								default_input=default_input,
+								char_limit=char_limit,
+								pos=np.asarray(pos)+offset,
+								size=size,
+								font=self.font,
+								font_size=30,
+								alpha=150,
+								font_color=(0,0,0),
+								justify_x='center',
+								justify_y='center',)
+
+		self.widgets.append(self.input)
+
+
+	def clear_input(self):
+		self.widgets.remove(self.input)
+		self.input = None
 
 
 	def update_widget_pos(self):

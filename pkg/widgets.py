@@ -9,9 +9,10 @@ data_dir = os.path.join(os.getcwd(), 'data\\')
 
 
 class Widget:
-	def __init__(self, parent=None, pos=None, polygon=None, size=None, colour=None, img=None, font=None, font_size=None, font_color=(0,0,0), justify_x='left', justify_y='top'):
+	def __init__(self, parent=None, pos=None, polygon=None, size=None, colour=None, img=None, font=None, font_size=None, font_color=(0,0,0), alpha=255, justify_x='left', justify_y='top'):
 		self.parent = parent
 		self.pos = np.asarray(pos)
+		self.alpha = alpha
 		self.original_pos = copy.copy(self.pos)
 		self.size = size
 		self.colour = colour
@@ -71,7 +72,7 @@ class Label(Widget):
 
 
 	def update_draw_surface(self):
-		self.draw_surface = pg.surface.Surface(self.rect.size)
+		self.draw_surface = pg.surface.Surface(self.rect.size, pg.SRCALPHA)
 		self.draw_surface.fill(self.colour_key)
 
 		if hasattr(self, 'polygon'):
@@ -127,7 +128,7 @@ class Button(Label):
 		self.hover_colour = hover_colour
 
 
-	def update(self, mouse_event):
+	def update(self, mouse_event, key_event):
 		collides = self.collidepoint(pg.mouse.get_pos())
 
 		if self.enable_hover:
@@ -151,11 +152,9 @@ class Button(Label):
 		
 
 class Dialogue(Widget):
-	def __init__(self, text_file=None, text_margin=(20,20), alpha=120, speaker_color=None, *args, **kwargs):
+	def __init__(self, text_file=None, text_margin=(20,20), speaker_color=None, *args, **kwargs):
 		super().__init__(*args, **kwargs)
-
 		
-		self.alpha = alpha
 		self.text_file = text_file
 		self.text_margin = np.asarray(text_margin)
 		self.text_pos = [40,60]
@@ -163,7 +162,6 @@ class Dialogue(Widget):
 
 		if speaker_color is not None: self.speaker_color = speaker_color
 		else: self.speaker_color = (0,0,0)
-
 
 		self.updatable = True
 
@@ -230,18 +228,32 @@ class Dialogue(Widget):
 			if event[1] == '\\set':
 				exec('self.parent.' + event[2])
 				self.get_text_events()
+			if event[1] == '\\input':
+				ds = event[2].split(',')
+				ds = [x.strip() for x in ds]
+				var = 'self.parent.' + ds[0]
+
+				default_input = ''
+				char_limit = 0
+				for d in ds:
+					d = d.split('=')
+					if d[0].strip() == 'default':
+						default_input = d[1].strip()
+					elif d[0].strip() == 'limit':
+						char_limit = int(d[1].strip())
+
+
+				self.parent.set_input(var, default_input, char_limit)
 
 				
 
-	def update(self, mouse_event):
+	def update(self, mouse_event, key_event):
 		collides = self.collidepoint(pg.mouse.get_pos())
 		if collides:
 			if len(mouse_event) >= 1:
 				but = mouse_event[0].button
 				if but == 1:
-
 					self.text_index = (self.text_index + 1)%len(self.text_list)
-					print(self.text_index)
 					self.handle_events(self.text_index)
 					self.update_draw_surface()
 
@@ -253,7 +265,7 @@ class Dialogue(Widget):
 
 
 class ChoiceDialogue(Widget):
-	def __init__(self, choices=[], actions=[], choice_spacing=10, choice_margin=30, alpha=200, *args, **kwargs):
+	def __init__(self, choices=[], actions=[], choice_spacing=10, choice_margin=30, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
 		self.choices = choices
@@ -261,9 +273,8 @@ class ChoiceDialogue(Widget):
 
 		self.choice_spacing = choice_spacing
 		self.choice_margin = choice_margin
-		self.alpha = alpha
 
-		self.choice_alpha = [alpha for _ in range(len(self.choices))]
+		self.choice_alpha = [self.alpha for _ in range(len(self.choices))]
 
 		self.updatable = True
 
@@ -323,10 +334,8 @@ class ChoiceDialogue(Widget):
 		return rects
 
 
-	def update(self, mouse_event):
-		# print(self)
+	def update(self, mouse_event, key_event):
 		mouse_pos = pg.mouse.get_pos()
-		# print(self.choice_rects[0].collidepoint(mouse_pos), self.choice_rects[0])
 		for i in range(len(self.choices)):
 			collides = self.choice_rects[i].collidepoint(mouse_pos)
 			if collides:
@@ -366,3 +375,80 @@ class ChoiceDialogue(Widget):
 		surf.set_colorkey(self.colour_key)
 		return surf.blit(self.draw_surface, self.pos)
 
+
+
+
+class Input(Widget):
+	def __init__(self, var='', default_input='', char_limit=0, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.var = var
+		self.updatable = True
+		self.char_limit = char_limit
+		self.parent.dialogue.updatable = False
+		self.input = ''
+		self.default_input = default_input
+		self.update_draw_surface()
+
+
+	def update(self, mouse_event, key_event):
+		if len(key_event) > 0:
+			keys = [e.key for e in key_event]
+
+			capslock = bool(pg.key.get_mods() & pg.KMOD_CAPS)
+			shift = bool(pg.key.get_mods() & pg.KMOD_SHIFT)
+			capitalize = capslock != shift
+			forbidden_keys = (13,8,304,303,301)
+
+			for key in keys:
+				#enter key 13
+				#backspace 8
+				#shift 304 and 303
+				#capslock: capslock = pg.key.get_mods() & pg.KMOD_CAPS
+				if key == 13:
+					if len(self.input.strip()) == 0:
+						self.input = self.default_input
+					exec(f'{self.var} = "{self.input}"')
+					self.parent.clear_input()
+					self.parent.dialogue.updatable = True
+					self.parent.dialogue.text_index = (self.parent.dialogue.text_index + 1)%len(self.parent.dialogue.text_list)
+					self.parent.dialogue.handle_events(self.parent.dialogue.text_index)
+					self.parent.dialogue.get_text_events()
+					return
+				elif key == 8:
+					self.input = self.input[:-1]
+				if not self.char_limit == 0 and len(self.input) < self.char_limit:
+					if chr(key).isalpha() and not key in forbidden_keys:
+						self.input = self.input + (chr(key), chr(key).upper())[capitalize]
+
+			self.update_draw_surface()
+
+
+	def draw(self, surf):
+		surf.set_colorkey(self.colour_key)
+		return surf.blit(self.draw_surface, self.pos)
+
+	def update_draw_surface(self):
+		draw_surface = pg.surface.Surface(self.rect.size, pg.SRCALPHA)
+		draw_surface.fill((*self.colour, self.alpha))
+
+		text = self.font.render(self.input, True, self.font_color)
+		text_pos = [0,0]
+		rect = self.rect
+
+		if self.justify_x == 'left':
+			text_pos[0] = 0
+		elif self.justify_x == 'center':
+			text_pos[0] = (rect.size[0] - text.get_size()[0])//2
+		elif self.justify_x == 'right':
+			text_pos[0] = (rect.size[0] - text.get_size()[0])
+
+		if self.justify_y == 'top':
+			text_pos[1] = 0
+		elif self.justify_y == 'center':
+			text_pos[1] = (rect.size[1] - text.get_size()[1])//2
+		elif self.justify_y == 'bottom':
+			text_pos[1] = (rect.size[1] - text.get_size()[1])
+
+		draw_surface.blit(text, text_pos)
+
+		self.draw_surface = draw_surface

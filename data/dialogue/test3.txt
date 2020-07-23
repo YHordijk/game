@@ -1,4 +1,17 @@
-\newtext{Text Placeholders}
+\newtext{Hello}
+\clearbackground
+This is a small demo for some things.
+
+\newtext[name_input]{Hello}
+\input{game.player.name, default=Edward, limit=20}
+What is your name?
+
+\newtext{Hello}
+\choice{Yes:goto(post_name_input), No I want to change my name:goto(name_input)}
+Are you sure your name is $game.player.name$?
+
+\newtext[post_name_input]{Text Placeholders}
+
 \set{game.player.gender='male'}
 We can use text placeholders to add variables to our text. We can add them using \$enclosing dollar signs\$.
 For example if our character is male and we want to use 'he', we can use \$they\$.
@@ -18,7 +31,15 @@ Now you can choose the gender of our player, try it out!
 
 \newtext[done]{$game.happy_boy.name$}
 Hi it's your friend $game.happy_boy.name$! I also have a gender: $game.happy_boy.gender$ and pronouns $game.happy_boy.they$, $game.happy_boy.them$ and $game.happy_boy.their$.
-Characters can have any property, for example I have $game.happy_boy.hearts$ heart(s)!
+Characters can have any property, for example I have $game.happy_boy.hearts$ heart(s) right now!
 
 
-\newtext{}
+\newtext{$game.happy_boy.name$}
+\set{game.happy_boy.hearts = 4}
+We can change most values in the game, for example I can set my hearts to 4 using \\set{game.happy_boy.hearts = 4}.
+Now the number of hearts is $game.happy_boy.hearts$!
+
+\newtext{$game.happy_boy.name$}
+\set{game.happy_boy.hearts += 2}
+I can also increase the number of hearts instead of explicitly setting it. For example, if we want to add 2 hearts we can use \\set{game.happy_boy.hearts += 2}.
+Now the number of hearts is $game.happy_boy.hearts$!!!
