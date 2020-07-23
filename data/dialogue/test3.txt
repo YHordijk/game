@@ -12,7 +12,7 @@ Hi I am $game.player.name$. I am $game.player.gender$ and my pronouns are theref
 Please call me $honor$ or $nonmarital$.
 
 \newtext{$game.player.name$}
-\choice{Male:set(game.player.gender='male'), Female:set(game.player.gender='female'), Done:goto{done}}
+\choice{Male:set(game.player.gender='male')goto(introduction), Female:set(game.player.gender='female')goto(introduction), Done:goto(done)}
 Now you can choose the gender of our player, try it out!
 
 

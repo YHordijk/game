@@ -346,16 +346,19 @@ class ChoiceDialogue(Widget):
 			self.update_draw_surface()
 
 
-	def handle_choice_action(self, action):
-		if action.startswith('set'):
-			a = action.strip('set(').strip(')')
-			exec('self.parent.' + a)
-			self.parent.dialogue.get_text_events()
+	def handle_choice_action(self, actions):
+		actions = actions.split(')')
+		actions = [a + ')' for a in actions if len(a) > 0]
+		for action in actions:
+			if action.startswith('set'):
+				a = action.strip('set(').strip(')')
+				exec('self.parent.' + a)
+				self.parent.dialogue.get_text_events()
 
-		elif action.startswith('goto'):
-			a = action.strip('goto(').strip(')').strip()
-			self.parent.dialogue.goto(a)
-			self.parent.dialogue.text_index -= 1
+			elif action.startswith('goto'):
+				a = action.strip('goto(').strip(')').strip()
+				self.parent.dialogue.goto(a)
+				self.parent.dialogue.text_index -= 1
 
 
 
