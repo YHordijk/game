@@ -3,16 +3,17 @@
 
 class GameState:
 	def __init__(self):
-		self.player = Character(gender='female')
-		self.happy_boy = Character(gender='male')
+		self.player = Character(gender='female', name='Cutie')
+		self.happy_boy = Character(gender='male', name='Happy Boy')
 
 
 
 
 class Character:
-	def __init__(self, gender='male'):
+	def __init__(self, gender='male', hearts=0, name=''):
 		self.gender = gender
-		self.hearts = 0
+		self.hearts = hearts
+		self.name = name
 
 	@property
 	def they(self):
@@ -51,7 +52,7 @@ class Character:
 		if self.gender == 'male':
 			return 'mister'
 		elif self.gender == 'female':
-			return 'misses'
+			return 'miss'
 		else: return 'uuuuh'
 
 

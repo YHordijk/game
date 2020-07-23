@@ -203,7 +203,7 @@ class Menu:
 										   font_size=30, 
 										   alpha = 200,
 										   font_color=(0,0,0),
-										   text_file=dialogue_dir + 'test2.txt'))
+										   text_file=dialogue_dir + 'test3.txt'))
 
 		self.dialogue = self.widgets[-1]
 

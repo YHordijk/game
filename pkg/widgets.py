@@ -156,7 +156,7 @@ class Dialogue(Widget):
 
 		
 		self.alpha = alpha
-		
+		self.text_file = text_file
 		self.text_margin = np.asarray(text_margin)
 		self.text_pos = [40,60]
 		self.text_index = 0
@@ -169,8 +169,19 @@ class Dialogue(Widget):
 
 		self.chars = []
 
+		self.events = []
+		self.text_list = []
+		self.get_text_events()
 
-		self.text_list, self.events = txt.Parser().get_text(self.parent, text_file, text_size=self.size - self.text_margin - self.text_pos, font_color=self.font_color)
+
+	def get_events_at_index(self, index):
+		return filter(lambda x: x[0] == index, self.events)
+
+
+	def get_text_events(self):
+		self.text_list.clear()
+		self.events.clear()
+		self.text_list, self.events = txt.Parser().get_text(self.parent, self.text_file, text_size=self.size - self.text_margin - self.text_pos, font_color=self.font_color)
 
 		self.update_draw_surface()
 
@@ -190,7 +201,7 @@ class Dialogue(Widget):
 
 
 	def handle_events(self, index):
-		events = self.events.get_events_at_index(index)
+		events = self.get_events_at_index(index)
 		for event in events:
 			if event[1] == '\\background':
 				self.parent.set_background(rf'{data_dir}\images\background\{event[2]}.png')
@@ -216,6 +227,10 @@ class Dialogue(Widget):
 					actions.append(d[1].strip())
 
 				self.parent.set_choices(choices, actions)
+			if event[1] == '\\set':
+				exec('self.parent.' + event[2])
+				self.get_text_events()
+
 				
 
 	def update(self, mouse_event):
@@ -309,6 +324,7 @@ class ChoiceDialogue(Widget):
 
 
 	def update(self, mouse_event):
+		# print(self)
 		mouse_pos = pg.mouse.get_pos()
 		# print(self.choice_rects[0].collidepoint(mouse_pos), self.choice_rects[0])
 		for i in range(len(self.choices)):
@@ -324,7 +340,6 @@ class ChoiceDialogue(Widget):
 						self.parent.dialogue.text_index = (self.parent.dialogue.text_index + 1)%len(self.parent.dialogue.text_list)
 						self.parent.dialogue.handle_events(self.parent.dialogue.text_index)
 						self.parent.dialogue.update_draw_surface()
-						
 			else:
 				self.choice_alpha[i] = self.alpha
 
@@ -334,6 +349,9 @@ class ChoiceDialogue(Widget):
 	def handle_choice_action(self, action):
 		if action.startswith('set'):
 			a = action.strip('set(').strip(')')
+			exec('self.parent.' + a)
+			self.parent.dialogue.get_text_events()
+
 		elif action.startswith('goto'):
 			a = action.strip('goto(').strip(')').strip()
 			self.parent.dialogue.goto(a)

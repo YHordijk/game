@@ -8,8 +8,8 @@ pg.init()
 
 #construct color dictionary
 color_path = os.getcwd() + r'/data/resources/colors.csv'
-color_path = r"D:\Users\Yuman\Desktop\Programmeren\Python\PyGame\game\data\resources\colors.csv"
-# color_path = r"C:\Users\Yuman Hordijk\Desktop\Scripts\game\data\resources\colors.csv"
+# color_path = r"D:\Users\Yuman\Desktop\Programmeren\Python\PyGame\game\data\resources\colors.csv"
+color_path = r"C:\Users\Yuman Hordijk\Desktop\Scripts\game\data\resources\colors.csv"
 color_dict = {}
 with open(color_path, 'r') as f:
 	for color in f.readlines():
@@ -138,7 +138,7 @@ class Parser:
 
 	def parse_text(self, file):
 		text_flags = ['\\s']
-		event_flags = ['\\background', '\\clearbackground', '\\chars', '\\clearchars', '\\goto', '\\choice']
+		event_flags = ['\\background', '\\clearbackground', '\\chars', '\\clearchars', '\\goto', '\\choice', '\\set']
 
 		#load text and join all of the lines
 		with open(file, 'r') as f:
@@ -156,14 +156,22 @@ class Parser:
 			'nonmarital': self.parent.game.player.nonmarital,
 		}
 
-		pattern = r'\$[^$]*\$'
+		pattern = r'(?<!\\)\$[^$]*(?<!\\)\$'
 		for p in list(re.finditer(pattern, raw_text)):
-			raw_text = raw_text.replace(p.group(), text_placeholders[p.group().strip('$')])
+			p = p.group()
+			if p.strip('$') in text_placeholders.keys():
+				new_string = text_placeholders[p.strip('$')]
+			else:
+				new_string = eval('self.parent.' + p.strip('$'))
+
+			raw_text = raw_text.replace(p, str(new_string)) 
+
+		raw_text = raw_text.replace('\\$', '$')
 
 
 
 		#find the flags
-		pattern = r'(?<!\\)\\{1}(?!\\)[^. {}]+(?:\{[^}]*\})*'
+		pattern = r'(?<!\\)\\{1}(?!\\)[^.$ {}]+(?:\{[^}]*\})*'
 		flags = list(re.finditer(pattern, raw_text))
 
 
@@ -188,7 +196,7 @@ class Parser:
 			text_parts_flags.append(list(re.finditer(pattern, p)))
 
 		
-		events = Events()
+		events = []
 		text_obj_list = []
 		for i, p in enumerate(text_parts):
 			text_obj = Text(text_size=self.text_size)
@@ -215,10 +223,12 @@ class Parser:
 
 					if d[0] in event_flags:
 						if d[0] == '\\goto':
-							events.add_event(d, min(i+1, len(text_parts)-1))
+							events.append((i+1, *d))
+							# events.add_event(d, min(i+1, len(text_parts)-1))
 							print(min(i+1, len(text_parts)))
 						else:
-							events.add_event(d, i)
+							events.append((i, *d))
+							# events.add_event(d, i)
 
 
 					elif d[0].startswith('\\newtext'):

@@ -1,0 +1,24 @@
+\newtext{Text Placeholders}
+\set{game.player.gender='male'}
+We can use text placeholders to add variables to our text. We can add them using \$enclosing dollar signs\$.
+For example if our character is male and we want to use 'he', we can use \$they\$.
+
+\newtext{Text Placeholders}
+\background{castle_hall}
+An example will be given now!
+
+\newtext[introduction]{$game.player.name$}
+Hi I am $game.player.name$. I am $game.player.gender$ and my pronouns are therefore $they$, $them$ and $their$.
+Please call me $honor$ or $nonmarital$.
+
+\newtext{$game.player.name$}
+\choice{Male:set(game.player.gender='male'), Female:set(game.player.gender='female'), Done:goto{done}}
+Now you can choose the gender of our player, try it out!
+
+
+\newtext[done]{$game.happy_boy.name$}
+Hi it's your friend $game.happy_boy.name$! I also have a gender: $game.happy_boy.gender$ and pronouns $game.happy_boy.they$, $game.happy_boy.them$ and $game.happy_boy.their$.
+Characters can have any property, for example I have $game.happy_boy.hearts$ heart(s)!
+
+
+\newtext{}
