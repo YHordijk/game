@@ -180,7 +180,6 @@ class Dialogue(Widget):
 		self.text_list.clear()
 		self.events.clear()
 		self.text_list, self.events = txt.Parser().get_text(self.parent, self.text_file, text_size=self.size - self.text_margin - self.text_pos, font_color=self.font_color)
-
 		self.update_draw_surface()
 
 
@@ -194,7 +193,7 @@ class Dialogue(Widget):
 
 	def goto(self, label):
 		self.text_index = {t.label:i for i, t in enumerate(self.text_list)}[label]
-		self.handle_events(self.text_index)
+		# self.handle_events(self.text_index)
 		self.update_draw_surface()
 
 

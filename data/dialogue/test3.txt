@@ -7,7 +7,7 @@ This is a small demo for some things.
 What is your name?
 
 \newtext{Hello}
-\choice{Yes:goto(post_name_input), No I want to change my name:goto(name_input)}
+\choice{Yes my name is $game.player.name$:goto(post_name_input), No I want to change my name:goto(name_input)}
 Are you sure your name is $game.player.name$?
 
 \newtext[post_name_input]{Text Placeholders}

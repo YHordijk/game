@@ -1,0 +1,156 @@
+\newtext[gender_choice]{}
+\choice{Male:set(game.player.gender='male')goto(name_male), Female:set(game.player.gender='female')goto(name_female)}
+What is your gender?
+
+
+
+\newtext[name_male]{}
+\choice{Yes:, No:goto(gender_choice)}
+Are you a $game.player.gender$?
+
+\newtext{}
+\input{game.player.name, default=Cute Boy, limit=20}
+What is your name?
+\newtext{}
+\choice{Yes:goto(start), No:goto(name_male)}
+Is your name $game.player.name$?
+
+\newtext[name_female]{}
+\choice{Yes:, No:goto(gender_choice)}
+Are you a $game.player.gender$?
+
+\newtext{}
+\input{game.player.name, default=Cute Girl, limit=20}
+What is your name?
+\newtext{}
+\choice{Yes:goto(start), No:goto(name_female)}
+Is your name $game.player.name$?
+
+
+\newtext[start]{$game.player.name$}
+When I was little I used to spend most of my days over at my grandfather's house. 
+\newtext{$game.player.name$}
+He lived in a large house in the forest, no neighbors for a few miles left or right.
+\newtext{$game.player.name$}
+It never bothered him much however, considering he was a fairly private man.
+\newtext{$game.player.name$}
+He never told me much about his life. But when I would come over he told me the most amazing stories about a kingdom far away.
+\newtext{$game.player.name$}
+The kingdom was called \s[b]{Hellaseia}. 
+\newtext{$game.player.name$}
+He told me about the adventures he'd had and the people he had met. 
+\newtext{$game.player.name$}
+His stories were so detailed and colorful that I believed it all word for word. I mean, what little kid wouldnt believe their grandfather.
+\newtext{$game.player.name$}
+My grandfather and i were increddibly close, and when my father, his son, died we got even closer. 
+\newtext{$game.player.name$}
+But...a few years ago we kind of lost contact. When i went off to college i didn't have much time to see him and being the old timer he was he refused to get a phone. 
+\newtext{$game.player.name$}
+It had been a year since i saw my grandfather when my aunt called me, informing me of his passing. 
+\newtext{$game.player.name$}
+Naturally I was destroyed. My grandfather was my hero.
+\newtext{$game.player.name$}
+My aunt also informed me that my grandfather left me his house, in his will. 
+\newtext{$game.player.name$}
+My aunt lives several hours away by car so i was really the closest relative he had left. 
+\newtext{$game.player.name$}
+I poured my heart into my studies for a while, making sure i made my late grandfather proud. Then during summer break i headed back to the house in the woods i had spend so many hours as a child.
+\newtext{}
+...
+\newtext{$game.player.name$}
+It looks exactly the same as when i last left it. The light softly hitting it through the trees, the swinging bench out on the front porch I fell asleep in so many times. The beat up car out front my grandfather refused to replace.
+\newtext{$game.player.name$}
+I walked over to the front porch and lifted up a small flower pot right next to the door, pulling the spare key out of a pouch grandpa kept under there in case he forgot his keys again. 
+\newtext{$game.player.name$}
+The click of the lock was loud in the serene forest.
+\newtext{$game.player.name$}
+As i stepped inside dust particles floated around me, illuminated by the rays of afternoon sun shimmering through the half open blinds. 
+\newtext{$game.player.name$}
+I almost couldnt get myself to sell this place. But what's a college student going to do with a giant house in the woods hours away from her school.
+\newtext{$game.player.name$}
+I trace my hand along as i venture deeper into the house. 
+\newtext{$game.player.name$}
+It looks so empty, when grandpa was alive this place never felt empty, not even when it was just us here.
+\newtext{$game.player.name$}
+Well I'm going to have to start clearing this place out sooner or later. Might as well start today, there are still a few hours of sunlight left. 
+\newtext{$game.player.name$}
+I should probably start with the attic, knowing most of the stuff up there can go straight to a second hand store or just the trash it will be easier to sort through. 
+\newtext{$game.player.name$}
+I cautiously make my way up the large double staircase in the middle of the hallway and head to the attic.
+\newtext{}
+...
+\newtext{$game.player.name$}
+Opening the attic door feels strangely foreign. 
+\newtext{$game.player.name$}
+Grandpa never allowed anyone up here. I assumed it was just because there was fragile stuff up there and he didn't want me or any of his stuff to get damaged.
+\newtext{$game.player.name$}
+The floor here creaks more than in the rest of the house. Stuff covered in sheets and dust is scattered around the room.
+\newtext{$game.player.name$}
+I cough as i pull the sheet of what looks like an old dresser grandpa stored up here for god knows what reason. 
+\newtext{$game.player.name$}
+How am i ever going to get all this stuff down the stairs, the real estate agent said id have to clear out any extra furniture and personalized items. That includes almost everything up here.
+\newtext{$game.player.name$}
+A sigh escaped me before i can stop it.
+\newtext{$game.player.name$}
+How am i ever going to clear out any of this all by myself. I don't think i can even get this dresser down and there is much larger stuff up here. 
+\newtext{$game.player.name$}
+I take a few steps towards another sheet covered object and pull it off. Dust flying everywhere. This one seemed to have way more dust on it than the dresser.
+\newtext{$game.player.name$}
+I take a second to catch my breath after inhaling so much dust before looking at what i just uncovered.
+\newtext{}
+...
+\newtext{$game.player.name$}
+A large mirror looms in front of me. I has to be at least 7 foot tall and half as wide. 
+What could my grandpa possible need a mirror this size for. 
+\newtext{}
+...
+\newtext{$game.player.name$}
+wait a second.
+\newtext{}
+...
+\newtext{$game.player.name$}
+I can't see my reflection in the mirror?
+\newtext{$game.player.name$}
+I look behind me and sure enough the mirror reflects everything in the room behind me perfectly. But no matter what i do it doesn't show me. 
+\newtext{$game.player.name$}
+I take a step back and move an old dinner chair only to see it magically move in the mirror as well, without showing me moving it. 
+\newtext{$game.player.name$}
+''This is so weird''
+\newtext{$game.player.name$}
+I reach out to the mirror but pull back before touching it. It radiates some sort of heat.
+\newtext{$game.player.name$}
+"What kind of mirror is this, I've never seen anything like it before.''
+\newtext{$game.player.name$}
+Should I touch it?
+\newtext{$game.player.name$}
+I reach out again cautiously. It's probably only hot because the sun was on it or something. 
+\newtext{$game.player.name$}
+I look over to the window only to see that there is no way for that theory to be possible. 
+\newtext{$game.player.name$}
+I look back to the mirror as my hand is inching closer. Why am I so anxious about this, it's just a mirror, what's the worst thing that could happen.
+\newtext{$game.player.name$}
+With more bravery than i thought i had i thrust my hand out to the mirror, grazing it with my finger tips. The glass seems to ripple where i touch it. 
+\newtext{$game.player.name$}
+With a gasp i pull back holding my hand to my chest as the ripple slowly dies out and the mirror returns to normal.
+\newtext{$game.player.name$}
+Well, normal without showing my reflection. This is the weirdest thing that has ever happened to me. Is this why grandpa didn't want anyone to go up to the attic?
+\newtext{$game.player.name$}
+I reach out again, determined to full touch the mirror this time. I suppose you could say my curiosity is a curse but my grandpa always called it a blessing. 
+\newtext{$game.player.name$}
+As I reach the mirror and lay my hand flat on the glass something even more surprising happens. I can't feel the mirror, just heat engulfing my hand as it moves right through the glass. 
+\newtext{$game.player.name$}
+I swallow nervously as a strange tingling feeling spreads through my body, originating from the hand that I can no longer see, being swallowed by the mirror. 
+\newtext{$game.player.name$}
+''This may be the dumbest thing i have ever done in my entire life''
+\newtext{$game.player.name$}
+I take one deep breath and utter a little prayer to any deity that will listen before moving forward more, submerging my entire arm into the mirror before a tugging sensation takes over pulling my entire body in. 
+\newtext{$game.player.name$}
+White light blinds me as my face hits the mirror. It feels like I'm under water but without being wet, or how i assume that would feel like. 
+\newtext{$game.player.name$}
+The tingle increases to a sting as i press my eyes closed against the light. It feels like im falling but floating at the same time. The stinging gets worse till my head feels like it's exploding.
+\newtext{$game.player.name$}
+I breathe out hard before opening my eyes, seeing a confused face before my eyes roll back into my head and my knees buckle.
+\newtext{$game.player.name$}
+The last thing i hear is someone yelling for help as my knees hit the floor and my consciousness fails me. 
+\newtext{}
+...

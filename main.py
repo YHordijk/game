@@ -1,4 +1,4 @@
 import pygame as pg
 pg.init()
 import pkg.menu as menu
-menu.mainloop(FPS=60)
+menu.mainloop(FPS=120)

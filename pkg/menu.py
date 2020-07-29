@@ -38,6 +38,7 @@ def command_fade_menu(source, direction='right', duration=1, **kwargs):
 
 def command_start_button(source, direction='right', duration=1, **kwargs):
 	global active_transition_animation
+	menu.set_dialogue('prologue')
 	if active_transition_animation is None:
 		active_transition_animation = tr_anim.fade_out(start_time=time, menu=menu, direction=direction, duration=duration, **kwargs)
 	menu.dialogue.text_index = 0
@@ -104,7 +105,10 @@ class Menu:
 		self.bkgr_color = bkgr_color
 		self.background = background
 		self.menu_offset = np.array([0,0])
+
 		self.choice = None
+		self.input = None
+		self.dialogue = None
 
 		self.game = game_state.GameState()
 
@@ -193,21 +197,28 @@ class Menu:
 										 command_kwargs={'direction':'right', 'start_color':(120, 0, 250), 'target_color': (250, 0, 120)}) )
 
 
+		
+
+		
+
+	def set_dialogue(self, filename):
 		####====== MAIN GAME ======####
-		offset = np.asarray((0, SIZE[1]))
+		offset = np.asarray((0, self.SIZE[1]))
 		size = (self.SIZE[0], 220)
 		pos = (0, self.SIZE[1]-size[1])
-		self.widgets.append( widg.Dialogue(parent=self,
-										   pos=np.asarray(pos)+offset+self.menu_offset,
-										   size=size,
-										   font=self.font, 
-										   font_size=30, 
-										   alpha = 200,
-										   font_color=(0,0,0),
-										   text_file=dialogue_dir + 'test3.txt'))
+		self.dialogue = widg.Dialogue(parent=self,
+									  pos=np.asarray(pos)+offset+self.menu_offset,
+									  size=size,
+									  font=self.font, 
+									  font_size=30, 
+									  alpha = 200,
+									  font_color=(0,0,0),
+									  text_file=dialogue_dir + filename + '.txt')
 
-		self.dialogue = self.widgets[-1]
+		# self.widgets.append(self.dialogue)
 
+	def clear_dialogue(self):
+		self.choice = None
 
 
 	def set_background(self, file):
@@ -254,11 +265,10 @@ class Menu:
 										   justify_y='center',
 										   choice_spacing=40)
 
-		self.widgets.append(self.choice)
+		# self.widgets.append(self.choice)
 
 
 	def clear_choices(self):
-		self.widgets.remove(self.choice)
 		self.choice = None
 
 
@@ -279,24 +289,24 @@ class Menu:
 								justify_x='center',
 								justify_y='center',)
 
-		self.widgets.append(self.input)
+		# self.widgets.append(self.input)
 
 
 	def clear_input(self):
-		self.widgets.remove(self.input)
 		self.input = None
 
 
 	def update_widget_pos(self):
 		# print(self.menu_offset)
-		for widget in self.widgets:
+		for widget in self.widgets + self.default_widgets:
 			widget.pos = widget.original_pos + self.menu_offset
 
 
 	def update(self, *args, **kwargs):
 		draw_surface = self.draw_surface
+
 		self.update_widget_pos()
-		for widget in self.widgets:
+		for widget in (self.widgets + self.default_widgets):
 			#draw widget if it is on screen
 			# try: print(self.screen_rect.colliderect(self.choice.rect), self.choice.rect)
 			# except: pass
@@ -307,6 +317,11 @@ class Menu:
 				widget.draw(draw_surface)
 
 
+	@property
+	def default_widgets(self):
+		default_widgets = [self.input, self.dialogue, self.choice]
+		default_widgets = [x for x in default_widgets if x is not None]
+		return default_widgets
 	
 
 

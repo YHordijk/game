@@ -55,30 +55,14 @@ class Text:
 		
 
 
-class Events:
-	def __init__(self, events=[]):
-		#events is dictionary with key text index and value event: bkgr change, transition, chars
-		self.events = events
-
-	def get_events_at_index(self, index):
-		return filter(lambda x: x[0] == index, self.events)
-
-	def add_event(self, event, index):
-		self.events.append((index, *event))
-
-
-
 class TextPart:
 	def __init__(self, text, flags, text_size=(1280,200), font_size=30, default_font='mono', font_color=(0,0,0)):
 		self.text = text
 		self.flags = flags
 		self.text_size = text_size
-		self.bold = 'b' in flags
-		self.italics = 'i' in flags
-		self.underline = 'u' in flags
 		self.font_color = font_color
 		self.font_size = font_size
-		self.color = self.get_color(flags)
+		self.parse_flags(flags)
 
 		self.font = list(filter(lambda x: 'font' in x, flags))
 		if len(self.font) > 0:
@@ -92,6 +76,18 @@ class TextPart:
 		self.font.set_underline(self.underline)
 
 		# print(self)
+
+	def parse_flags(self, flags):
+		color_flag = ''
+		self.color = self.get_color(flags)
+		if 'c' in flags:
+			color_flag = re.search(r'c\([^()]*\)', flags).group()
+
+		non_color_flags = flags.replace(color_flag, '')
+		self.bold = 'b' in non_color_flags
+		self.italics = 'i' in non_color_flags
+		self.underline = 'u' in non_color_flags
+		
 
 
 	def get_color(self, flags):
