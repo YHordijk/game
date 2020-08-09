@@ -6,6 +6,12 @@ class GameState:
 		self.player = Character(gender='female', name='Cutie')
 		self.happy_boy = Character(gender='male', name='Happy Boy')
 
+		self.isaac = Character(gender='male', name='Isaac')
+		self.selena = Character(gender='female', name='Selena')
+		self.penny = Character(gender='female', name='Penny')
+		self.emi = Character(gender='female', name='Emi')
+		self.king = Character(gender='male', name='King')
+		self.prince = Character(gender='male', name='Prince')
 
 
 
@@ -14,6 +20,7 @@ class Character:
 		self.gender = gender
 		self.hearts = hearts
 		self.name = name
+
 
 	@property
 	def they(self):
